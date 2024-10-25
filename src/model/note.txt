@@ -1,1 +1,2 @@
 Existe la posibilidad de hacer una clase abstracta para persona --> (Player-U-Referee)
+Acuerdate de pasar switch de PlayerPosition en register player para controladora. Mirar fotos de JP

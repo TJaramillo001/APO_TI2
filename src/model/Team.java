@@ -13,11 +13,18 @@ public class Team {
     private int yellowCards;
     private int redCards;
 
-    public Team(String teamName, String country, Player[] players, String coachName, int matchesPlayed, int matchesWon, int matchesLost, int goalsFor, int goalsAgainst, int yellowCards, int redCards) {
+    public Team(String teamName, String country, String coachName) {
+    
+        this.teamName = teamName;
+        this.country = country;
+        this.coachName = coachName;
+    
+    }
+
+    public Team(String teamName, String country, String coachName, int matchesPlayed, int matchesWon, int matchesLost, int goalsFor, int goalsAgainst, int yellowCards, int redCards) {
         
         this.teamName = teamName;
         this.country = country;
-        this.players = new Player[20];
         this.coachName = coachName;
         this.matchesPlayed = matchesPlayed;
         this.matchesWon = matchesWon;
@@ -27,8 +34,25 @@ public class Team {
         this.yellowCards = yellowCards;
         this.redCards = redCards;
 
+        this.players = new Player[20];
+
 
     }
+
+    //Usable methods
+    public void addPlayer(Player player){
+        for(int i=0; i<players.length; i++){
+            if(players[i]==null){
+                players[i]=player;
+                System.out.println("Player successfully registered");
+                break;
+            } else {
+                System.out.println("Sorry. This team is already full");
+            }
+        }
+    }
+    
+
     //Getters & Setters
     public String getTeamName() {
         return teamName;

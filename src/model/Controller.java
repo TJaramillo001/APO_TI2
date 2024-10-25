@@ -1,4 +1,5 @@
 package model;
+import model.*;
 
 public class Controller {
     private int roundCount; 
@@ -15,7 +16,8 @@ public class Controller {
     private int teamCount;
     private int playerCount;
     private int refereeCount;
-    public Controller(int roundCount, Team[] teams, Player[] players, Referee[] referees, int teamCount, int playerCount, int refereeCount) {
+
+    public Controller() {
         this.roundCount=0;
         this.teams= new Team[8]; //Only 8 teams allowed to be divided in 2 groups of 4
         this.players = new Player[160]; //20 players per team: 20*8=160 total players.
@@ -24,37 +26,37 @@ public class Controller {
         this.playerCount = 0;
         this.refereeCount = 0;
     }
-    public void registerPlayer(String playerName, int playerNum, String country, int goalsScored, int assists, int yellowCards, int redCards, int matchesPlayed){
-        players[playerCount]= new Player(playerName, playerNum, country, goalsScored, assists, yellowCards, redCards, matchesPlayed);
-        playerCount++;
+    public void registerPlayer(String playerName, int playerNum, PlayerPosition playerPosition, String country, String teamName){
+        Team teamToAdd = findTeam(teamName);
+        if (teamToAdd!=null){
+        
+            players[playerCount]= new Player(playerName, playerNum, playerPosition, country, 0, 0, 0, 0, 0); 
+            playerCount++;
+            // 0's correspond to goals scored, assists, yellows, reds and matches played. 
+            teamToAdd.addPlayer(new Player(playerName, playerNum, playerPosition, country,0,0,0,0,0));
+            System.out.println("Player successfully added to "+teamToAdd);
+        
+        } else{
+            System.out.println("Sorry, that team was not found.");
+        }
     }
-    public void registerTeam(String teamName, String country, Player[] players, String coachName, int matchesPlayed, int matchesWon, int matchesLost, int goalsFor, int goalsAgainst, int yellowCards, int redCards){
-        teams[teamCount] = new Team(teamName, country, players, coachName, matchesPlayed, matchesWon, matchesLost, goalsFor, goalsAgainst, yellowCards, redCards)
+
+    public void registerTeam(String teamName, String country, String coachName){
+        teams[teamCount] = new Team(teamName, country, coachName, 0, 0, 0, 0, 0, 0, 0);
         teamCount++;
     }
-    public void registerReferee(String refName, String refID, RefereeType refType, int matchesOfficiated, int yellowsGiven, int redsGiven){
-        referees[refereeCount] = new Referee(refName, refID, refType, matchesOfficiated, yellowsGiven, redsGiven);
+    public Team findTeam(String name){
+        for (int i=0; i<teamCount; i++){
+            if(teams[i].getTeamName().equalsIgnoreCase(name)){
+                return teams[i];
+            }
+        }
+        return null;
+    }
+
+    public void registerReferee(String refName, String refID, RefereeType refType){
+        referees[refereeCount] = new Referee(refName, refID, refType, 0, 0, 0);
         refereeCount++;
     }
     
 }
-/*
-public void associateApartment(String buildingName, int number, TypeApartment type, double rentValue){
-        Building building = findBuilding(buildingName);
-        if(building != null){ //Checks if building exists
-            building.addApartment(new Apartment(number, type, rentValue, true));
-        } else {
-            System.out.println("Building not found");
-        }
-    }
- * public void addApartment(Apartment apartment){
-        for(int i=0;i<apartments.length;i++){
-            if(apartments[i]==null){
-                apartments[i]=apartment;
-                apartmentCount++;
-                System.out.println("Apartment successfully registered");
-                break;
-            }
-        }
-    }
- */

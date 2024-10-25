@@ -8,6 +8,12 @@ public class Referee {
     private int yellowsGiven;
     private int redsGiven;
 
+    public Referee(String refName, String refID, RefereeType refType) {
+        this.refName = refName;
+        this.refID = refID;
+        this.refType = refType;
+    }
+    
     public Referee(String refName, String refID, RefereeType refType, int matchesOfficiated, int yellowsGiven, int redsGiven) {
         this.refName = refName;
         this.refID = refID;

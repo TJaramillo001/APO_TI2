@@ -3,16 +3,25 @@ package model;
 public class Player {
     private String playerName;
     private int playerNum;
+    private PlayerPosition playerPosition;
     private String country;
     private int goalsScored;
     private int assists;
     private int yellowCards;
     private int redCards;
     private int matchesPlayed;
-
-    public Player(String playerName, int playerNum, String country, int goalsScored, int assists, int yellowCards, int redCards, int matchesPlayed){
+    
+    public Player(String playerName, int playerNum, PlayerPosition playerPosition, String country){
         this.playerName=playerName;
         this.playerNum=playerNum;
+        this.playerPosition=playerPosition;
+        this.country=country;
+    }
+
+    public Player(String playerName, int playerNum, PlayerPosition playerPosition, String country, int goalsScored, int assists, int yellowCards, int redCards, int matchesPlayed){
+        this.playerName=playerName;
+        this.playerNum=playerNum;
+        this.playerPosition=playerPosition;
         this.country=country;
         this.goalsScored=goalsScored;
         this.assists=assists;
@@ -35,6 +44,14 @@ public class Player {
 
     public void setPlayerNum(int playerNum) {
         this.playerNum = playerNum;
+    }
+    
+    public PlayerPosition getPlayerPosition(){
+        return playerPosition;
+    }
+
+    public void setPlayerPosition(PlayerPosition playerPosition){
+        this.playerPosition=playerPosition;
     }
 
     public String getCountry() {
