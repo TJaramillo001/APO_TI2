@@ -1,0 +1,1 @@
+Existe la posibilidad de hacer una clase abstracta para persona --> (Player-U-Referee)
