@@ -12,15 +12,30 @@ public class Team {
     private int goalsAgainst;
     private int yellowCards;
     private int redCards;
-
+    /**
+     * Description: Initial constructor class used to create and register teams
+     * @param String teamName : Corresponds to the team name
+     * @param String country : Corresponds to the country of origin of the team
+     * @param String coachName : Corresponds to the name of the head coach of that team.
+     */
     public Team(String teamName, String country, String coachName) {
-    
         this.teamName = teamName;
         this.country = country;
         this.coachName = coachName;
-    
     }
-
+    /**
+     * Description: Constructor class used to hold information regarding each team
+     * @param String teamName : Corresponds to the team name
+     * @param String country : Corresponds to the country of origin of the team
+     * @param String coachName : Corresponds to the name of the head coach of that team.
+     * @param int matchesPlayed : Corresponds to the amount of matches played
+     * @param int matchesWon : Corresponds to the amount of matches won
+     * @param int matchesLost : Corresponds to the amount of matches lost
+     * @param int goalsFor : Corresponds to the total sum of goals this team has scored
+     * @param int goalsAgainst : Corresponds to the total sum of goals other teams have scored against this team
+     * @param int yellowCards : Corresponds to the amount of yellow cards the players in this team have received
+     * @param int redCards : Corresponds to the amount of red cards the players in this team have received
+     */
     public Team(String teamName, String country, String coachName, int matchesPlayed, int matchesWon, int matchesLost, int goalsFor, int goalsAgainst, int yellowCards, int redCards) {
         
         this.teamName = teamName;
@@ -40,17 +55,27 @@ public class Team {
     }
 
     //Usable methods
-    public void addPlayer(Player player){
-        for(int i=0; i<players.length; i++){
-            if(players[i]==null){
-                players[i]=player;
+    /**
+     * Description: This method will receive a Player datatype and associate it within the team in case that the team is not full yet
+     * @param Player player : This corresponds to a player object that will be added to a specific team
+     */
+    public void addPlayer(Player player) {
+        boolean added = false; // Flag to check if the player was added
+        
+        for (int i = 0; i < players.length; i++) {
+            if (players[i] == null) {
+                players[i] = player;
                 System.out.println("Player successfully registered");
-                break;
-            } else {
-                System.out.println("Sorry. This team is already full");
+                added = true; // Set the flag to true
+                break; // Exit the loop after adding the player
             }
         }
+        // If the player was not added, it means the team is full
+        if (!added) {
+            System.out.println("Sorry. This team is already full");
+        }
     }
+    
     
 
     //Getters & Setters
@@ -73,6 +98,20 @@ public class Team {
     public Player[] getPlayers() {
         return players;
     }
+
+    public String getPlayerNames() { //Returns a list of all players in this team
+        String playerNames = "";
+        
+        for (Player player : players) {
+            if (player != null) {
+                playerNames += "- " + player.getName() + "\n";
+            }
+        }
+        
+        return !playerNames.isEmpty() ? playerNames : "No players registered";
+    }
+    
+    
 
     public void setPlayers(Player[] players) {
         this.players = players;
@@ -141,6 +180,4 @@ public class Team {
     public void setRedCards(int redCards) {
         this.redCards = redCards;
     }
-    
-
 }

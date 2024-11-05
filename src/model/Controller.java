@@ -16,6 +16,8 @@ public class Controller {
     private int teamCount;
     private int playerCount;
     private int refereeCount;
+    private boolean preloadTeam;
+    private boolean preloadRef;
 
     public Controller() {
         this.roundCount=0;
@@ -25,7 +27,18 @@ public class Controller {
         this.teamCount = 0;
         this.playerCount = 0;
         this.refereeCount = 0;
+        this.preloadTeam=false;
+        this.preloadRef=false;
     }
+    //Player related methods
+    /**
+     * Description : This method receives all player information needed for registration and then uses this data to generate a new player
+     * @param String playerName : Corresponds to the name of the player to-be registered
+     * @param String playerNum : Corresponds to the player jersey number
+     * @param PlayerPosition playerPosition : Corresponds to the position in which this player plays
+     * @param String country : Corresponds to the country of origin this player plays in
+     * @param String teamName : Corresponds to the team name in which this player will be a part of.
+     */
     public void registerPlayer(String playerName, int playerNum, PlayerPosition playerPosition, String country, String teamName){
         Team teamToAdd = findTeam(teamName);
         if (teamToAdd!=null){
@@ -34,17 +47,80 @@ public class Controller {
             playerCount++;
             // 0's correspond to goals scored, assists, yellows, reds and matches played. 
             teamToAdd.addPlayer(new Player(playerName, playerNum, playerPosition, country,0,0,0,0,0));
-            System.out.println("Player successfully added to "+teamToAdd);
+            System.out.println("Player successfully added to "+teamToAdd.getTeamName());
         
         } else{
             System.out.println("Sorry, that team was not found.");
         }
     }
-
+    /**
+     * Description: Determines the player position based on the provided integer value. This method assigns a specific PlayerPosition enumeration value 
+     * @param int check : An integer representing the player's position
+     * @return : The PlayerPosition value associated with the specified integer or null if the integer does not match a valid selection.
+     */
+    public PlayerPosition selectPosition(int check){
+        PlayerPosition position=null;
+        switch (check) {
+            case 1:
+                position=PlayerPosition.GOALKEEPER;
+                break;
+            case 2: 
+                position=PlayerPosition.DEFENDER;
+                break;
+            case 3:
+                position=PlayerPosition.MIDFIELDER;
+                break;
+            case 4:
+                position=PlayerPosition.FORWARD;
+                break;
+            default:
+                position = null;
+                break;
+        }
+        return position;
+    }
+     /**
+     * Description: Searches and displays information for a player by name if found.
+     * @param String playerName : The name of the player to search for.
+     * @return boolean : true if the player was found and information was displayed; false otherwise.
+     */
+    public boolean playerInfo(String playerName){
+        boolean flag=false;
+        for(Player player:players){
+            if(player!=null&& player.getName().equalsIgnoreCase(playerName)){
+                System.out.println( "\nPlayer Name: " + player.getName() + "\n" +
+                                    "Country: " + player.getCountry() + "\n" +
+                                    "Jersey Number: " + player.getPlayerNum() + "\n" +
+                                    "Player Position: "+player.getPlayerPosition().toString()+ "\n\n" +
+                                    "Goals Scored: "+player.getGoalsScored() + "\n" +
+                                    "Assists: "+player.getAssists() + "\n" +
+                                    "Yellow Cards: "+player.getYellowCards() + "\n" +
+                                    "Red Cards: "+player.getRedCards() + "\n" +
+                                    "Matches Played: "+player.getMatchesPlayed());
+                flag=true;
+            }
+        }
+        return flag;
+    }
+    
+     /**
+     * Description: Registers a new team with specified name, country, and coach, initializing all team stats to zero.
+     * @param String teamName : The name of the team to register.
+     * @param String country : The country this team represents.
+     * @param String coachName : The name of the team's head coach.
+     */
     public void registerTeam(String teamName, String country, String coachName){
         teams[teamCount] = new Team(teamName, country, coachName, 0, 0, 0, 0, 0, 0, 0);
         teamCount++;
     }
+
+    /**
+     * Description : Searches for and returns a team based on the specified team name.
+     *
+     * @param String name : The name of the team to search for.
+     * @return Team : The team with the matching name, or null if not found.
+     */
+
     public Team findTeam(String name){
         for (int i=0; i<teamCount; i++){
             if(teams[i].getTeamName().equalsIgnoreCase(name)){
@@ -53,10 +129,367 @@ public class Controller {
         }
         return null;
     }
+    /**
+     * Description : Displays the names of all registered teams in the console.
+     */
 
-    public void registerReferee(String refName, String refID, RefereeType refType){
-        referees[refereeCount] = new Referee(refName, refID, refType, 0, 0, 0);
+    public void showAllTeams(){
+        for (int i = 0; i < teams.length; i++) {
+            if(teams[i]!=null){
+                System.out.println("- "+teams[i].getTeamName());
+            }
+           
+        }
+    }
+    /**
+    * Description : Displays detailed information about a selected team, including its name, country, coach, players, and match statistics.
+    * @param String selection : Name of the team to retrieve information for.
+    * @return boolean : True if the team is found and information is displayed; false otherwise.
+    */
+
+    public boolean teamInfo(String selection) {
+        for (Team team : teams) {
+            if (team != null && team.getTeamName().equalsIgnoreCase(selection)) {
+                System.out.println("\nTeam Name: " + team.getTeamName() + "\n" +
+                                   "Country: " + team.getCountry() + "\n" +
+                                   "Head Coach: " + team.getCoachName() + "\n\n" +
+                                   "Players:\n" + team.getPlayerNames() + "\n\n" +
+                                   "Matches Played: "+team.getMatchesPlayed() + "\n" +
+                                   "Matches Won: "+team.getMatchesWon() + "\n" +
+                                   "Matches Lost: "+team.getMatchesLost()+ "\n" +
+                                   "Goals For: "+team.getGoalsFor()+ "\n" +
+                                   "Goals Against: "+team.getGoalsAgainst());
+                return true;
+            } 
+        }
+        return false;
+    }
+    
+    /**
+    * Description : Registers a referee by creating a new Referee object with specified details and adds it to the referees array.
+    * @param String refName : Name of the referee to be registered.
+    * @param String refID : Unique identification number for the referee.
+    * @param RefereeType refType : Type of referee, either central or assistant.
+    * @param String country : Country of origin of the referee.
+    */
+    public void registerReferee(String refName, String refID, RefereeType refType, String country){
+        referees[refereeCount] = new Referee(refName, refID, refType, country, 0, 0, 0);
+        System.out.println("Referee successfully registered");
         refereeCount++;
     }
+    /**
+     * Description : Selects and returns the RefereeType based on the provided position string.
+     * @param String check : Referee position input, either "CENTRAL" or "ASSISTANT".
+     * @return RefereeType returnRef : Selected RefereeType if valid, or null if invalid.
+     */
+
+    public RefereeType selectPosition(String check){
+        RefereeType returnRef = null;
+        switch(check){
+            case "CENTRAL":
+                returnRef=RefereeType.CENTRAL;
+                break;
+            case "ASSISTANT":
+                returnRef=RefereeType.ASSISTANT;
+                break;
+            default:
+                System.out.println("Invalid position, please try again");
+        }
+        return returnRef;
+    }
+    /**
+     * Description : Displays the names of all registered referees.
+     */
+
+    public void showAllRefs(){
+        for (int i = 0; i < referees.length; i++) {
+            if(referees[i]!=null){
+                System.out.println("- "+referees[i].getName());
+            }
+           
+        }
+    }
+    /**
+     * Description : Retrieves and displays information about a specified referee.
+     * @param String refName : The name of the referee to look up.
+     * @return boolean : Indicates whether the referee was found and their information displayed.
+     */
+    public boolean refereeInfo(String refName){
+        boolean flag = false;
+        for(Referee refs: referees){
+            if(refName.equalsIgnoreCase(refs.getName())&&refs!=null){
+                System.out.println( "\nReferee Name: "+refs.getName() + "\n" +
+                                    "Referee ID: "+refs.getRefID()+ "\n" +
+                                    "Referee Country: "+refs.getCountry()+ "\n" +
+                                    "Referee Position: "+refs.getRefType().toString()+ "\n" + "\n" +
+                                    "Matches Officiated: "+refs.getMatchesOfficiated()+ "\n" +
+                                    "Yellows Given: "+refs.getYellowsGiven()+ "\n" +
+                                    "Red Givens: "+refs.getRedsGiven());
+                flag=true;
+                return flag;
+            }
+        }
+        return flag;
+    }
+    /**
+     * Description : Preloads a set of referees into the system if not already done.
+     */
+    public void preloadReferees(){
+        if(!preloadRef){
+             // Preload 4 Central Referees
+            registerReferee("Juan Martinez", "REF001", RefereeType.CENTRAL, "Argentina");
+            registerReferee("Carlos Perez", "REF002", RefereeType.CENTRAL, "Brazil");
+            registerReferee("Miguel Sanchez", "REF003", RefereeType.CENTRAL, "Colombia");
+            registerReferee("Pedro Gomez", "REF004", RefereeType.CENTRAL, "Chile");
+
+            // Preload 8 Assistant Referees
+            registerReferee("Alejandro Ruiz", "REF005", RefereeType.ASSISTANT, "Peru");
+            registerReferee("Diego Ortega", "REF006", RefereeType.ASSISTANT, "Ecuador");
+            registerReferee("Fernando Rios", "REF007", RefereeType.ASSISTANT, "Venezuela");
+            registerReferee("Jorge Silva", "REF008", RefereeType.ASSISTANT, "Uruguay");
+            registerReferee("Luis Fernandez", "REF009", RefereeType.ASSISTANT, "Paraguay");
+            registerReferee("Ricardo Lopez", "REF010", RefereeType.ASSISTANT, "Bolivia");
+            registerReferee("Sebastian Ramos", "REF011", RefereeType.ASSISTANT, "Mexico");
+            registerReferee("Andres Nunez", "REF012", RefereeType.ASSISTANT, "Costa Rica");
+
+            System.out.println("\n\n\n\n\nAll 12 referees have been added.");
+            preloadRef=true;
+        } else{
+            System.out.println("Sorry, referees have already been preloaded");
+        }
+       
+    }
+    /**
+     * Description : Preloads teams and their respective players into the system if not already done.
+     */
+    public void preloadTeams() {
+        if(!preloadTeam){
+            registerTeam("Argentina", "Argentina", "Lionel Scaloni");
+            registerTeam("Colombia", "Colombia", "Nestor Lorenzo");
+            registerTeam("Brazil", "Brazil", "Fernando Diniz");
+            registerTeam("Chile", "Chile", "Eduardo Berizzo");
+            registerTeam("Uruguay", "Uruguay", "Marcelo Bielsa");
+            registerTeam("USA", "USA", "Gregg Berhalter");
+            registerTeam("Peru", "Peru", "Juan Reynoso");
+            registerTeam("Venezuela", "Venezuela", "Fernando Batista");
+        
+            // Adding players to Argentina's national team
+            registerPlayer("Lionel Messi", 10, PlayerPosition.FORWARD, "Argentina", "Argentina");
+            registerPlayer("Emiliano Martinez", 1, PlayerPosition.GOALKEEPER, "Argentina", "Argentina");
+            registerPlayer("Angel Di Maria", 11, PlayerPosition.MIDFIELDER, "Argentina", "Argentina");
+            registerPlayer("Nicolas Otamendi", 19, PlayerPosition.DEFENDER, "Argentina", "Argentina");
+            registerPlayer("Lautaro Martinez", 22, PlayerPosition.FORWARD, "Argentina", "Argentina");
+            registerPlayer("Rodrigo De Paul", 7, PlayerPosition.MIDFIELDER, "Argentina", "Argentina");
+            registerPlayer("Leandro Paredes", 5, PlayerPosition.MIDFIELDER, "Argentina", "Argentina");
+            registerPlayer("Paulo Dybala", 21, PlayerPosition.FORWARD, "Argentina", "Argentina");
+            registerPlayer("Juan Foyth", 2, PlayerPosition.DEFENDER, "Argentina", "Argentina");
+            registerPlayer("Gonzalo Montiel", 4, PlayerPosition.DEFENDER, "Argentina", "Argentina");
+            registerPlayer("Enzo Fernandez", 8, PlayerPosition.MIDFIELDER, "Argentina", "Argentina");
+            registerPlayer("Alexis Mac Allister", 14, PlayerPosition.MIDFIELDER, "Argentina", "Argentina");
+            registerPlayer("Julian Alvarez", 9, PlayerPosition.FORWARD, "Argentina", "Argentina");
+            registerPlayer("Marcos Acuña", 3, PlayerPosition.DEFENDER, "Argentina", "Argentina");
+            registerPlayer("Lucas Martinez", 6, PlayerPosition.DEFENDER, "Argentina", "Argentina");
+            registerPlayer("German Pezzella", 16, PlayerPosition.DEFENDER, "Argentina", "Argentina");
+            registerPlayer("Giovani Lo Celso", 18, PlayerPosition.MIDFIELDER, "Argentina", "Argentina");
+            registerPlayer("Joaquin Correa", 13, PlayerPosition.FORWARD, "Argentina", "Argentina");
+            registerPlayer("Cristian Romero", 17, PlayerPosition.DEFENDER, "Argentina", "Argentina");
+            registerPlayer("Nicolas Gonzalez", 15, PlayerPosition.FORWARD, "Argentina", "Argentina");
+        
+            // Adding players to Colombia's national team
+            registerPlayer("James Rodriguez", 10, PlayerPosition.MIDFIELDER, "Colombia", "Colombia");
+            registerPlayer("David Ospina", 1, PlayerPosition.GOALKEEPER, "Colombia", "Colombia");
+            registerPlayer("Juan Cuadrado", 11, PlayerPosition.MIDFIELDER, "Colombia", "Colombia");
+            registerPlayer("Yerry Mina", 13, PlayerPosition.DEFENDER, "Colombia", "Colombia");
+            registerPlayer("Luis Diaz", 14, PlayerPosition.FORWARD, "Colombia", "Colombia");
+            registerPlayer("Duvan Zapata", 9, PlayerPosition.FORWARD, "Colombia", "Colombia");
+            registerPlayer("Wilmar Barrios", 5, PlayerPosition.MIDFIELDER, "Colombia", "Colombia");
+            registerPlayer("Davinson Sanchez", 23, PlayerPosition.DEFENDER, "Colombia", "Colombia");
+            registerPlayer("Radamel Falcao", 3, PlayerPosition.FORWARD, "Colombia", "Colombia");
+            registerPlayer("Alfredo Morelos", 7, PlayerPosition.FORWARD, "Colombia", "Colombia");
+            registerPlayer("Johan Mojica", 17, PlayerPosition.DEFENDER, "Colombia", "Colombia");
+            registerPlayer("Stefan Medina", 2, PlayerPosition.DEFENDER, "Colombia", "Colombia");
+            registerPlayer("Carlos Cuesta", 4, PlayerPosition.DEFENDER, "Colombia", "Colombia");
+            registerPlayer("Mateus Uribe", 6, PlayerPosition.MIDFIELDER, "Colombia", "Colombia");
+            registerPlayer("Jefferson Lerma", 8, PlayerPosition.MIDFIELDER, "Colombia", "Colombia");
+            registerPlayer("Miguel Borja", 18, PlayerPosition.FORWARD, "Colombia", "Colombia");
+            registerPlayer("Sebastian Villa", 20, PlayerPosition.FORWARD, "Colombia", "Colombia");
+            registerPlayer("Daniel Munoz", 12, PlayerPosition.DEFENDER, "Colombia", "Colombia");
+            registerPlayer("Frank Fabra", 16, PlayerPosition.DEFENDER, "Colombia", "Colombia");
+            registerPlayer("Camilo Vargas", 22, PlayerPosition.GOALKEEPER, "Colombia", "Colombia");
+        
+            // Adding players to Brazil's national team
+            registerPlayer("Neymar Jr", 10, PlayerPosition.FORWARD, "Brazil", "Brazil");
+            registerPlayer("Alisson Becker", 1, PlayerPosition.GOALKEEPER, "Brazil", "Brazil");
+            registerPlayer("Casemiro", 5, PlayerPosition.MIDFIELDER, "Brazil", "Brazil");
+            registerPlayer("Thiago Silva", 3, PlayerPosition.DEFENDER, "Brazil", "Brazil");
+            registerPlayer("Vinicius Jr", 11, PlayerPosition.FORWARD, "Brazil", "Brazil");
+            registerPlayer("Marquinhos", 4, PlayerPosition.DEFENDER, "Brazil", "Brazil");
+            registerPlayer("Richarlison", 9, PlayerPosition.FORWARD, "Brazil", "Brazil");
+            registerPlayer("Fred", 8, PlayerPosition.MIDFIELDER, "Brazil", "Brazil");
+            registerPlayer("Gabriel Jesus", 21, PlayerPosition.FORWARD, "Brazil", "Brazil");
+            registerPlayer("Lucas Paqueta", 17, PlayerPosition.MIDFIELDER, "Brazil", "Brazil");
+            registerPlayer("Danilo", 2, PlayerPosition.DEFENDER, "Brazil", "Brazil");
+            registerPlayer("Raphinha", 19, PlayerPosition.FORWARD, "Brazil", "Brazil");
+            registerPlayer("Eder Militao", 13, PlayerPosition.DEFENDER, "Brazil", "Brazil");
+            registerPlayer("Philippe Coutinho", 7, PlayerPosition.MIDFIELDER, "Brazil", "Brazil");
+            registerPlayer("Renan Lodi", 6, PlayerPosition.DEFENDER, "Brazil", "Brazil");
+            registerPlayer("Rodrygo", 18, PlayerPosition.FORWARD, "Brazil", "Brazil");
+            registerPlayer("Alex Telles", 16, PlayerPosition.DEFENDER, "Brazil", "Brazil");
+            registerPlayer("Bruno Guimaraes", 14, PlayerPosition.MIDFIELDER, "Brazil", "Brazil");
+            registerPlayer("Weverton", 12, PlayerPosition.GOALKEEPER, "Brazil", "Brazil");
+            registerPlayer("Everton Ribeiro", 20, PlayerPosition.MIDFIELDER, "Brazil", "Brazil");
+            
+            // Adding 20 players to Chile's national team
+            registerPlayer("Claudio Bravo", 1, PlayerPosition.GOALKEEPER, "Chile", "Chile");
+            registerPlayer("Gary Medel", 17, PlayerPosition.DEFENDER, "Chile", "Chile");
+            registerPlayer("Arturo Vidal", 8, PlayerPosition.MIDFIELDER, "Chile", "Chile");
+            registerPlayer("Alexis Sanchez", 7, PlayerPosition.FORWARD, "Chile", "Chile");
+            registerPlayer("Ben Brereton", 22, PlayerPosition.FORWARD, "Chile", "Chile");
+            registerPlayer("Charles Aranguiz", 20, PlayerPosition.MIDFIELDER, "Chile", "Chile");
+            registerPlayer("Mauricio Isla", 4, PlayerPosition.DEFENDER, "Chile", "Chile");
+            registerPlayer("Guillermo Maripan", 3, PlayerPosition.DEFENDER, "Chile", "Chile");
+            registerPlayer("Diego Valdes", 15, PlayerPosition.MIDFIELDER, "Chile", "Chile");
+            registerPlayer("Paulo Diaz", 5, PlayerPosition.DEFENDER, "Chile", "Chile");
+            registerPlayer("Eduardo Vargas", 11, PlayerPosition.FORWARD, "Chile", "Chile");
+            registerPlayer("Jean Meneses", 14, PlayerPosition.FORWARD, "Chile", "Chile");
+            registerPlayer("Francisco Sierralta", 6, PlayerPosition.DEFENDER, "Chile", "Chile");
+            registerPlayer("Erick Pulgar", 13, PlayerPosition.MIDFIELDER, "Chile", "Chile");
+            registerPlayer("Gabriel Suazo", 2, PlayerPosition.DEFENDER, "Chile", "Chile");
+            registerPlayer("Tomas Alarcon", 18, PlayerPosition.MIDFIELDER, "Chile", "Chile");
+            registerPlayer("Sebastian Vegas", 12, PlayerPosition.DEFENDER, "Chile", "Chile");
+            registerPlayer("Victor Davila", 10, PlayerPosition.FORWARD, "Chile", "Chile");
+            registerPlayer("Bryan Cortes", 23, PlayerPosition.GOALKEEPER, "Chile", "Chile");
+            registerPlayer("Felipe Mora", 9, PlayerPosition.FORWARD, "Chile", "Chile");
+
+            // Adding 20 players to Uruguay's national team
+            registerPlayer("Fernando Muslera", 1, PlayerPosition.GOALKEEPER, "Uruguay", "Uruguay");
+            registerPlayer("Diego Godin", 3, PlayerPosition.DEFENDER, "Uruguay", "Uruguay");
+            registerPlayer("Federico Valverde", 15, PlayerPosition.MIDFIELDER, "Uruguay", "Uruguay");
+            registerPlayer("Luis Suarez", 9, PlayerPosition.FORWARD, "Uruguay", "Uruguay");
+            registerPlayer("Darwin Nunez", 11, PlayerPosition.FORWARD, "Uruguay", "Uruguay");
+            registerPlayer("Rodrigo Bentancur", 6, PlayerPosition.MIDFIELDER, "Uruguay", "Uruguay");
+            registerPlayer("Jose Gimenez", 2, PlayerPosition.DEFENDER, "Uruguay", "Uruguay");
+            registerPlayer("Ronald Araujo", 4, PlayerPosition.DEFENDER, "Uruguay", "Uruguay");
+            registerPlayer("Matias Vecino", 5, PlayerPosition.MIDFIELDER, "Uruguay", "Uruguay");
+            registerPlayer("Edinson Cavani", 21, PlayerPosition.FORWARD, "Uruguay", "Uruguay");
+            registerPlayer("Sebastian Coates", 19, PlayerPosition.DEFENDER, "Uruguay", "Uruguay");
+            registerPlayer("Nicolas De La Cruz", 10, PlayerPosition.MIDFIELDER, "Uruguay", "Uruguay");
+            registerPlayer("Lucas Torreira", 14, PlayerPosition.MIDFIELDER, "Uruguay", "Uruguay");
+            registerPlayer("Maximiliano Gomez", 17, PlayerPosition.FORWARD, "Uruguay", "Uruguay");
+            registerPlayer("Facundo Pellistri", 18, PlayerPosition.FORWARD, "Uruguay", "Uruguay");
+            registerPlayer("Martin Caceres", 13, PlayerPosition.DEFENDER, "Uruguay", "Uruguay");
+            registerPlayer("Sergio Rochet", 23, PlayerPosition.GOALKEEPER, "Uruguay", "Uruguay");
+            registerPlayer("Agustin Canobbio", 16, PlayerPosition.MIDFIELDER, "Uruguay", "Uruguay");
+            registerPlayer("Matias Vina", 8, PlayerPosition.DEFENDER, "Uruguay", "Uruguay");
+            registerPlayer("Giorgian De Arrascaeta", 7, PlayerPosition.MIDFIELDER, "Uruguay", "Uruguay");
+
+            // Adding 20 players to USA's national team
+            registerPlayer("Matt Turner", 1, PlayerPosition.GOALKEEPER, "USA", "USA");
+            registerPlayer("Walker Zimmerman", 4, PlayerPosition.DEFENDER, "USA", "USA");
+            registerPlayer("Tyler Adams", 8, PlayerPosition.MIDFIELDER, "USA", "USA");
+            registerPlayer("Christian Pulisic", 10, PlayerPosition.FORWARD, "USA", "USA");
+            registerPlayer("Gio Reyna", 7, PlayerPosition.MIDFIELDER, "USA", "USA");
+            registerPlayer("Weston McKennie", 14, PlayerPosition.MIDFIELDER, "USA", "USA");
+            registerPlayer("Sergino Dest", 2, PlayerPosition.DEFENDER, "USA", "USA");
+            registerPlayer("Brenden Aaronson", 11, PlayerPosition.MIDFIELDER, "USA", "USA");
+            registerPlayer("Timothy Weah", 9, PlayerPosition.FORWARD, "USA", "USA");
+            registerPlayer("Antonee Robinson", 5, PlayerPosition.DEFENDER, "USA", "USA");
+            registerPlayer("Miles Robinson", 3, PlayerPosition.DEFENDER, "USA", "USA");
+            registerPlayer("Yunus Musah", 6, PlayerPosition.MIDFIELDER, "USA", "USA");
+            registerPlayer("Ricardo Pepi", 19, PlayerPosition.FORWARD, "USA", "USA");
+            registerPlayer("Sean Johnson", 23, PlayerPosition.GOALKEEPER, "USA", "USA");
+            registerPlayer("Jordan Morris", 13, PlayerPosition.FORWARD, "USA", "USA");
+            registerPlayer("Chris Richards", 15, PlayerPosition.DEFENDER, "USA", "USA");
+            registerPlayer("Kellyn Acosta", 12, PlayerPosition.MIDFIELDER, "USA", "USA");
+            registerPlayer("DeAndre Yedlin", 17, PlayerPosition.DEFENDER, "USA", "USA");
+            registerPlayer("Paul Arriola", 16, PlayerPosition.FORWARD, "USA", "USA");
+            registerPlayer("Zack Steffen", 18, PlayerPosition.GOALKEEPER, "USA", "USA");
+
+            // Adding 20 players to Peru's national team
+            registerPlayer("Pedro Gallese", 1, PlayerPosition.GOALKEEPER, "Peru", "Peru");
+            registerPlayer("Luis Advincula", 17, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Renato Tapia", 13, PlayerPosition.MIDFIELDER, "Peru", "Peru");
+            registerPlayer("Paolo Guerrero", 9, PlayerPosition.FORWARD, "Peru", "Peru");
+            registerPlayer("Andre Carrillo", 18, PlayerPosition.FORWARD, "Peru", "Peru");
+            registerPlayer("Christian Cueva", 10, PlayerPosition.MIDFIELDER, "Peru", "Peru");
+            registerPlayer("Edison Flores", 20, PlayerPosition.MIDFIELDER, "Peru", "Peru");
+            registerPlayer("Carlos Zambrano", 5, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Miguel Araujo", 4, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Alexander Callens", 22, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Yoshimar Yotun", 19, PlayerPosition.MIDFIELDER, "Peru", "Peru");
+            registerPlayer("Gianluca Lapadula", 14, PlayerPosition.FORWARD, "Peru", "Peru");
+            registerPlayer("Luis Abram", 6, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Rafael Tapia", 21, PlayerPosition.GOALKEEPER, "Peru", "Peru");
+            registerPlayer("Pedro Aquino", 23, PlayerPosition.MIDFIELDER, "Peru", "Peru");
+            registerPlayer("Marcos Lopez", 16, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Carlos Zambrano", 5, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Luis Advincula", 17, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Yoshimar Yotun", 19, PlayerPosition.MIDFIELDER, "Peru", "Peru");
+            registerPlayer("Jose Carvallo", 13, PlayerPosition.GOALKEEPER, "Peru", "Peru");
+            
+            // Adding 20 players to Venezuela's national team
+            registerPlayer("Wuilker Farinez", 1, PlayerPosition.GOALKEEPER, "Venezuela", "Venezuela");
+            registerPlayer("Yordan Osorio", 2, PlayerPosition.DEFENDER, "Venezuela", "Venezuela");
+            registerPlayer("Mikel Villanueva", 4, PlayerPosition.DEFENDER, "Venezuela", "Venezuela");
+            registerPlayer("Yangel Herrera", 6, PlayerPosition.MIDFIELDER, "Venezuela", "Venezuela");
+            registerPlayer("Salomon Rondon", 9, PlayerPosition.FORWARD, "Venezuela", "Venezuela");
+            registerPlayer("Jefferson Savarino", 10, PlayerPosition.FORWARD, "Venezuela", "Venezuela");
+            registerPlayer("Tomas Rincon", 8, PlayerPosition.MIDFIELDER, "Venezuela", "Venezuela");
+            registerPlayer("Darwin Machis", 11, PlayerPosition.FORWARD, "Venezuela", "Venezuela");
+            registerPlayer("Josef Martinez", 17, PlayerPosition.FORWARD, "Venezuela", "Venezuela");
+            registerPlayer("Roberto Rosales", 16, PlayerPosition.DEFENDER, "Venezuela", "Venezuela");
+            registerPlayer("Rolf Feltscher", 3, PlayerPosition.DEFENDER, "Venezuela", "Venezuela");
+            registerPlayer("Cristian Casseres Jr.", 13, PlayerPosition.MIDFIELDER, "Venezuela", "Venezuela");
+            registerPlayer("Jhon Chancellor", 5, PlayerPosition.DEFENDER, "Venezuela", "Venezuela");
+            registerPlayer("Juanpi", 14, PlayerPosition.MIDFIELDER, "Venezuela", "Venezuela");
+            registerPlayer("Ronald Hernandez", 20, PlayerPosition.DEFENDER, "Venezuela", "Venezuela");
+            registerPlayer("Fernando Aristeguieta", 19, PlayerPosition.FORWARD, "Venezuela", "Venezuela");
+            registerPlayer("Adrian Martinez", 15, PlayerPosition.DEFENDER, "Venezuela", "Venezuela");
+            registerPlayer("Luis Mago", 12, PlayerPosition.DEFENDER, "Venezuela", "Venezuela");
+            registerPlayer("Daniel Carrillo", 22, PlayerPosition.MIDFIELDER, "Venezuela", "Venezuela");
+            registerPlayer("Alain Baroja", 23, PlayerPosition.GOALKEEPER, "Venezuela", "Venezuela");
+
+
+
+            System.out.println("\n\n\n\n\n"+"Teams and players for Argentina, Colombia, Brazil, Chile, Uruguay, USA, Peru and Venezuela have been preloaded.");
+            preloadTeam=true;
+        } else{
+            System.out.println("Sorry, the teams have already been preloaded");
+        }
+        
+    }
+    public boolean verifyAdvance(){
+        boolean verify=false;
+        boolean team= false;
+        boolean player= false;
+        boolean referee= false;
+        if(teamCount==8){
+            System.out.println("Teams all registered");
+            team=true;
+        } else{
+            System.out.println("Please register 8 teams to continue to the next stage.\nYou currently have "+teamCount+" registered");
+
+        }
+        if(playerCount==160){
+            System.out.println("Players all registered");
+            player=true;
+        } else{
+            System.out.println("Please register 20 players to all teams to advance to the next stage.\nYou currently have "+playerCount+" registered");
+        }
+        if(refereeCount==12){
+            System.out.println("Referees all registered");
+            referee=true;
+        } else{
+            System.out.println("Please register all 12 referees to advance to the next stage");
+        }
+        if(team&&player&&referee){
+            verify=true;
+        }
+        return verify;
+    }
+    public void generateFixture(){
+
+    }
+    
     
 }
