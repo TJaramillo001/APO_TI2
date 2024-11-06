@@ -194,6 +194,7 @@ public class Executable {
                                 "1. Generate fixture \n" + 
                                 "2. Consult Group generation \n" + 
                                 "3. Consult Matches \n" + 
+                                "4. Asign referees to games \n" + 
                                 "10. Exit \n");
             select=in.nextInt();
             in.nextLine();
@@ -206,6 +207,9 @@ public class Executable {
                     break;
                 case 3:
                     cont.consultMatches();
+                    break;
+                case 4:
+                    cont.assignReferee();
                     break;
                 case 10:
                     System.out.println("Thank you for using the application! Goodbye.");

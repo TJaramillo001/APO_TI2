@@ -25,6 +25,7 @@ public class Controller {
     private boolean generated;
     private Match[] groupAMatches;
     private Match[] groupBMatches;
+    private boolean assigned;
 
 
 
@@ -44,6 +45,7 @@ public class Controller {
         this.generated=false;
         this.groupAMatches = new Match[6];  // 6 matches in group stage
         this.groupBMatches = new Match[6];  // 6 matches in group stage
+        this.assigned=false;
     }
     //Player related methods
     /**
@@ -685,16 +687,86 @@ public class Controller {
         }
     }
     public void assignReferee(){
-        boolean central=false;
-        for(Match match: groupAMatches){
-            for(Referee refs: referees){
+        assignReferee(groupAMatches);
+        assignReferee(groupBMatches);
+    }
 
-                if((refs.getRefType()==RefereeType.CENTRAL)&&(refs.getCountry()!=match.getHomeTeam().getCountry())&&(refs.getCountry()!=match.getAwayTeam().getCountry())){
+    public void assignReferee(Match[] groupMatch) {
+        if(!assigned){
+            for (Match match : groupMatch) {
+                Referee centralRef = null;
+                Referee[] assistantRefs = new Referee[2];
+                int assistantCount = 0;
     
+                shuffleReferees(referees);
+        
+                System.out.println("\nThe referees for:");
+                match.displayMatch();
+        
+                for (Referee ref : referees) {
+                    // Check if the referee is from a different country than either team
+                    if (!ref.getCountry().equals(match.getHomeTeam().getCountry()) && !ref.getCountry().equals(match.getAwayTeam().getCountry())) {
+        
+                        // Assign central referee if not already assigned
+                        if (ref.getRefType() == RefereeType.CENTRAL && centralRef == null) {
+                            centralRef = ref;
+                            
+                        }
+                        // Assign assistant referees if needed
+                        else if (ref.getRefType() == RefereeType.ASSISTANT && assistantCount < 2) {
+                            assistantRefs[assistantCount] = ref;
+                            
+                            assistantCount++;
+                        }
+                    }
+                    // Stop searching if we have assigned the central and both assistants
+                    if (centralRef != null && assistantCount == 2) {
+                        System.out.println("\nCentral Referee: " + centralRef.getName() + "\n" +
+                                               "Referee ID: " + centralRef.getRefID() + "\n" +
+                                               "Referee Country: " + centralRef.getCountry() + "\n" +
+                                               "Referee Position: " + centralRef.getRefType().toString() + "\n" +
+                                               "Matches Officiated: " + centralRef.getMatchesOfficiated() + "\n" +
+                                               "Yellows Given: " + centralRef.getYellowsGiven() + "\n" +
+                                               "Reds Given: " + centralRef.getRedsGiven());
+                        for(int j=0; j<assistantCount;j++){
+                            System.out.println("\nAssistant Referee #" + (j + 1) + ": " + assistantRefs[j].getName() + "\n" +
+                                               "Referee ID: " + assistantRefs[j].getRefID() + "\n" +
+                                               "Referee Country: " + assistantRefs[j].getCountry() + "\n" +
+                                               "Referee Position: " + assistantRefs[j].getRefType().toString() + "\n" +
+                                               "Matches Officiated: " + assistantRefs[j].getMatchesOfficiated() + "\n" +
+                                               "Yellows Given: " + assistantRefs[j].getYellowsGiven() + "\n" +
+                                               "Reds Given: " + assistantRefs[j].getRedsGiven());
+                        }
+                        
+                        break;
+                    }
+                }
+        
+                // Check if all referees have been assigned correctly
+                if (centralRef == null || assistantCount < 2) {
+                    System.out.println("Insufficient eligible referees for match: " + match);
+                } else {
+                    // Assign referees to the match if all are assigned
+                    match.setCentralReferee(centralRef);
+                    match.setAssistantReferees(assistantRefs);
+                    assigned=true;
                 }
             }
+        } else{
+            System.out.println("Sorry, the referees have already been assigned to matches");
         }
         
     }
+
+    private void shuffleReferees(Referee[] referees) {
+        Random random = new Random();
+        for (int i = referees.length - 1; i > 0; i--) {
+            int index = random.nextInt(i + 1);
+            Referee temp = referees[index];
+            referees[index] = referees[i];
+            referees[i] = temp;
+        }
+    }
+    
 
 }
