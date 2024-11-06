@@ -684,5 +684,17 @@ public class Controller {
             System.out.println("Sorry, the matches have not yet been generated.");
         }
     }
+    public void assignReferee(){
+        boolean central=false;
+        for(Match match: groupAMatches){
+            for(Referee refs: referees){
+
+                if((refs.getRefType()==RefereeType.CENTRAL)&&(refs.getCountry()!=match.getHomeTeam().getCountry())&&(refs.getCountry()!=match.getAwayTeam().getCountry())){
+    
+                }
+            }
+        }
+        
+    }
 
 }

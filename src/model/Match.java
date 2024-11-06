@@ -1,17 +1,12 @@
 package model;
-import java.time.LocalDate;
+import model.Referee;
 
 public class Match {
     private Team homeTeam;
     private Team awayTeam;
     private String matchDate;
     
-        public Match(Team homeTeam, Team awayTeam) {
-            this.homeTeam = homeTeam;
-            this.awayTeam = awayTeam;
-        }
-    
-        public Match(Team homeTeam, Team awayTeam, String matchDate) {
+    public Match(Team homeTeam, Team awayTeam, String matchDate) {
             this.homeTeam = homeTeam;
             this.awayTeam = awayTeam;
             this.matchDate = matchDate; // Date will be set separately
@@ -25,6 +20,8 @@ public class Match {
     public void displayMatch() {
         System.out.println(homeTeam.getTeamName() + " vs " + awayTeam.getTeamName() + " on " + matchDate);
     }
+
+
 
     // Getters for the teams and matchDate
     public Team getHomeTeam() {
