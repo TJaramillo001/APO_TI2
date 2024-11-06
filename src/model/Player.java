@@ -1,6 +1,6 @@
 package model;
 
-public class Player extends Person implements iWarmup {
+public class Player extends Person{
     
     private int playerNum;
     private PlayerPosition playerPosition;
@@ -99,11 +99,5 @@ public class Player extends Person implements iWarmup {
 
     public void setMatchesPlayed(int matchesPlayed) {
         this.matchesPlayed = matchesPlayed;
-    }
-
-    //Interface implementation
-    @Override
-    public String warmup(){
-        return "The player warms up";
     }
 }

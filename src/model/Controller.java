@@ -1,5 +1,7 @@
 package model;
 import model.*;
+import java.util.Random;
+
 
 public class Controller {
     private int roundCount; 
@@ -16,19 +18,32 @@ public class Controller {
     private int teamCount;
     private int playerCount;
     private int refereeCount;
-    private boolean preloadTeam;
-    private boolean preloadRef;
+    protected boolean preloadTeam;
+    protected boolean preloadRef;
+    private Random rand;
+    private Group[] groups;
+    private boolean generated;
+    private Match[] groupAMatches;
+    private Match[] groupBMatches;
+
+
 
     public Controller() {
-        this.roundCount=0;
+
         this.teams= new Team[8]; //Only 8 teams allowed to be divided in 2 groups of 4
         this.players = new Player[160]; //20 players per team: 20*8=160 total players.
-        this.referees= new Referee[12]; // 12 referees allowed in tournament. 4 Central, 8 Assistants.
+        this.referees = new Referee[12]; // 12 referees allowed in tournament. 4 Central, 8 Assistants.
         this.teamCount = 0;
         this.playerCount = 0;
         this.refereeCount = 0;
         this.preloadTeam=false;
         this.preloadRef=false;
+        this.groups = new Group[2];
+        this.groups[0] = new Group("Group A"); // Group A
+        this.groups[1] = new Group("Group B"); // Group B
+        this.generated=false;
+        this.groupAMatches = new Match[6];  // 6 matches in group stage
+        this.groupBMatches = new Match[6];  // 6 matches in group stage
     }
     //Player related methods
     /**
@@ -43,10 +58,10 @@ public class Controller {
         Team teamToAdd = findTeam(teamName);
         if (teamToAdd!=null){
         
-            players[playerCount]= new Player(playerName, playerNum, playerPosition, country, 0, 0, 0, 0, 0); 
-            playerCount++;
-            // 0's correspond to goals scored, assists, yellows, reds and matches played. 
-            teamToAdd.addPlayer(new Player(playerName, playerNum, playerPosition, country,0,0,0,0,0));
+            Player newPlayer = new Player(playerName, playerNum, playerPosition, country, 0, 0, 0, 0, 0);
+            players[playerCount++] = newPlayer;
+            teamToAdd.addPlayer(newPlayer);
+
             System.out.println("Player successfully added to "+teamToAdd.getTeamName());
         
         } else{
@@ -231,9 +246,6 @@ public class Controller {
         }
         return flag;
     }
-    /**
-     * Description : Preloads a set of referees into the system if not already done.
-     */
     public void preloadReferees(){
         if(!preloadRef){
              // Preload 4 Central Referees
@@ -487,9 +499,190 @@ public class Controller {
         }
         return verify;
     }
-    public void generateFixture(){
 
+    static class CustomDate {
+        int day;
+        int month;
+        int year;
+
+        CustomDate(int day, int month, int year) {
+            this.day = day;
+            this.month = month;
+            this.year = year;
+        }
+
+        // Method to add days to the date
+        public void addDays(int days) {
+            day += days;
+
+            // Days in each month
+            int[] daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+            while (day > daysInMonth[month - 1]) {
+                day -= daysInMonth[month - 1];
+                month++;
+                if (month > 12) {
+                    month = 1;
+                    year++;
+                }
+            }
+        }
+
+        // Method to format the date as dd-MM-yyyy
+        @Override
+        public String toString() {
+            return String.format("%02d-%02d-%d", day, month, year);
+        }
     }
-    
-    
+    public void generateFixture() {
+        
+        if(!generated){
+            // Now perform the randomization
+            Random rand = new Random();
+            for (int i = 0; i < teamCount; i++) {
+                int draw = rand.nextInt(teamCount);
+                Team temp = teams[i];
+                teams[i] = teams[draw];
+                teams[draw] = temp;
+            }
+
+            for (int i = 0; i < teamCount; i++) {
+                if (i < 4) {
+                    groups[0].addTeam(teams[i]); // Add to Group A
+                } else {
+                    groups[1].addTeam(teams[i]); // Add to Group B
+                }
+            }
+            
+            // Generate fixtures for each group
+            boolean check=false;
+            for (Group group : groups) {
+                if(!check){
+                    System.out.println("Group A");
+                    check=true;
+                }else{
+                    System.out.println("Group B");
+                }
+                group.displayGroup();
+                
+            }
+            // Generate matches for each group
+            
+
+            CustomDate initialDate = new CustomDate(15, 11, 2024);  // Starting date for the fixture
+            CustomDate matchDate = new CustomDate(initialDate.day, initialDate.month, initialDate.year);  // The first match date
+
+            // Track last match date for each team (initialize with the start date)
+            CustomDate[] lastMatchDates = new CustomDate[teamCount];
+            for (int i = 0; i < teamCount; i++) {
+                lastMatchDates[i] = new CustomDate(initialDate.day, initialDate.month, initialDate.year);  // All teams start at the initial date
+            }
+
+            // Generate matches for Group 1
+            int matchIndex = 0;  // Initialize matchIndex
+            for (int i = 0; i < 4; i++) {
+                for (int j = i + 1; j < 4; j++) {
+                    // Ensure both teams have at least 2 days of rest
+                    CustomDate team1LastMatch = lastMatchDates[i];
+                    CustomDate team2LastMatch = lastMatchDates[j];
+
+                    // Create a new match date based on the last matches
+                    matchDate = new CustomDate(initialDate.day, initialDate.month, initialDate.year);
+                    while (lessThanTwo(team1LastMatch, matchDate) || lessThanTwo(team2LastMatch, matchDate)) {
+                        matchDate.addDays(1);
+                    }
+
+                    // Create match and update last match dates for both teams
+                    groupAMatches[matchIndex++] = new Match(groups[0].getTeams()[i], groups[0].getTeams()[j], matchDate.toString());
+                    lastMatchDates[i] = matchDate;
+                    lastMatchDates[j] = matchDate;
+
+                    // Move to the next match date (after 2 days)
+                    matchDate.addDays(2);
+                }
+            }
+
+            // Generate matches for Group 2 (same logic as for Group 1)
+            matchIndex = 0;  // Initialize matchIndex
+            for (int i = 0; i < 4; i++) {
+                for (int j = i + 1; j < 4; j++) {
+                    CustomDate team1LastMatch = lastMatchDates[i + 4];  // Teams in group 2 start at index 4
+                    CustomDate team2LastMatch = lastMatchDates[j + 4];
+
+                    matchDate = new CustomDate(initialDate.day, initialDate.month, initialDate.year);
+                    while (lessThanTwo(team1LastMatch, matchDate) || lessThanTwo(team2LastMatch, matchDate)) {
+                        matchDate.addDays(1);
+                    }
+
+                    groupBMatches[matchIndex++] = new Match(groups[1].getTeams()[i], groups[1].getTeams()[j], matchDate.toString());
+                    lastMatchDates[i + 4] = matchDate;
+                    lastMatchDates[j + 4] = matchDate;
+
+                    matchDate.addDays(2);
+                }
+            }
+
+
+            // Display generated matches
+            System.out.println("\nMatches for Group A:");
+            for (Match match : groupAMatches) {
+                if (match != null) {
+                    match.displayMatch();
+                }
+            }
+
+            System.out.println("\nMatches for Group B:");
+            for (Match match : groupBMatches) {
+                if (match != null) {
+                    match.displayMatch();
+                }
+        
+            }
+            generated=true;
+        } else{
+            System.out.println("The groups and fixture have already been generated. For information regarding this, check the menu");
+        }
+    }
+    private boolean lessThanTwo(CustomDate lastMatchDate, CustomDate matchDate) {
+        int dayDiff = (matchDate.year - lastMatchDate.year) * 365 + (matchDate.month - lastMatchDate.month) * 30 + (matchDate.day - lastMatchDate.day);
+        return dayDiff <= 2;
+    }
+
+    public void consultFixture(){
+        if(generated){
+            boolean check=false;
+            for (Group group : groups) {
+                if(!check){
+                    System.out.println("Group A");
+                    check=true;
+                }else{
+                    System.out.println("Group B");
+                }
+                group.displayGroup();
+            }
+        } else{
+            System.out.println("Sorry, the groups have not yet been generated.");
+        }
+    }
+    public void consultMatches(){
+        if(generated){
+            System.out.println("\nMatches for Group A:");
+            for (Match match : groupAMatches) {
+                if (match != null) {
+                    match.displayMatch();
+                }
+            }
+
+            System.out.println("\nMatches for Group B:");
+            for (Match match : groupBMatches) {
+                if (match != null) {
+                    match.displayMatch();
+                }
+        
+            }
+            } else{
+            System.out.println("Sorry, the matches have not yet been generated.");
+        }
+    }
+
 }

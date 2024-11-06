@@ -1,6 +1,6 @@
 package model;
 
-public class Referee extends Person implements iWarmup{
+public class Referee extends Person{
 
     private String refID;
     private RefereeType refType;
@@ -79,9 +79,5 @@ public class Referee extends Person implements iWarmup{
         this.redsGiven = redsGiven;
     }
     
-    //Interface implementation
-    @Override
-    public String warmup(){
-        return "The referee warms up";
-    }
+
 }

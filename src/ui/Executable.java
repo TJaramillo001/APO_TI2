@@ -192,7 +192,8 @@ public class Executable {
             System.out.println("\n\nWelcome to the menu:\n");
 			System.out.println( "Please select one of the following:\n" + 
                                 "1. Generate fixture \n" + 
-                                "2. Consult fixture \n" + 
+                                "2. Consult Group generation \n" + 
+                                "3. Consult Matches \n" + 
                                 "10. Exit \n");
             select=in.nextInt();
             in.nextLine();
@@ -201,9 +202,12 @@ public class Executable {
                     cont.generateFixture();
                     break;
                 case 2:
-
+                    cont.consultFixture();
                     break;
                 case 3:
+                    cont.consultMatches();
+                    break;
+                case 10:
                     System.out.println("Thank you for using the application! Goodbye.");
                     flag=true;
                     in.close();
@@ -220,6 +224,7 @@ public class Executable {
     public static void main(String[] args) {
 		Executable main = new Executable();
 		main.run_one(flag);
+        main.run_two();
 	}
 
 }
