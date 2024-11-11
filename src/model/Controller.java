@@ -1,7 +1,7 @@
 package model;
 import model.*;
-import java.util.Random;
 
+import java.util.Random;
 
 public class Controller {
     private int roundCount; 
@@ -127,7 +127,7 @@ public class Controller {
      * @param String coachName : The name of the team's head coach.
      */
     public void registerTeam(String teamName, String country, String coachName){
-        teams[teamCount] = new Team(teamName, country, coachName, 0, 0, 0, 0, 0, 0, 0);
+        teams[teamCount] = new Team(teamName, country, coachName, 0, 0, 0, 0, 0, 0, 0, 0);
         teamCount++;
     }
 
@@ -146,6 +146,28 @@ public class Controller {
         }
         return null;
     }
+    public Player findPlayer(String playerName) {
+
+        for (Team team : teams) {
+            if (team != null) {
+                for (Player player : team.getPlayers()) { // Assuming `getPlayers()` returns a list of players
+                    if (player != null) {
+                        
+                        if (player.getName().equalsIgnoreCase(playerName)) {
+                            return player; // Return the player if the name matches
+                        }
+                    } 
+                }
+            } 
+        }
+        
+        // If no player is found, return null or print a message
+        System.out.println("Player not found: " + playerName);
+        return null;
+    }
+    
+    
+    
     /**
      * Description : Displays the names of all registered teams in the console.
      */
@@ -172,6 +194,7 @@ public class Controller {
                                    "Head Coach: " + team.getCoachName() + "\n\n" +
                                    "Players:\n" + team.getPlayerNames() + "\n\n" +
                                    "Matches Played: "+team.getMatchesPlayed() + "\n" +
+                                   "Matches Drawed: "+team.getMatchesDraw() + "\n" +
                                    "Matches Won: "+team.getMatchesWon() + "\n" +
                                    "Matches Lost: "+team.getMatchesLost()+ "\n" +
                                    "Goals For: "+team.getGoalsFor()+ "\n" +
@@ -687,12 +710,20 @@ public class Controller {
         }
     }
     public void assignReferee(){
-        assignReferee(groupAMatches);
-        assignReferee(groupBMatches);
+        if(generated){
+            if(!assigned){
+                assignReferee(groupAMatches);
+                assignReferee(groupBMatches);
+            } else{
+                System.out.println("Sorry, the referees have already been assigned to matches");
+            }
+            
+        } else{
+            System.out.println("Please generate the fixture before attempting to assign referees");
+        }
     }
 
-    public void assignReferee(Match[] groupMatch) {
-        if(!assigned){
+    public void assignReferee(Match[] groupMatch) {        
             for (Match match : groupMatch) {
                 Referee centralRef = null;
                 Referee[] assistantRefs = new Referee[2];
@@ -744,7 +775,7 @@ public class Controller {
         
                 // Check if all referees have been assigned correctly
                 if (centralRef == null || assistantCount < 2) {
-                    System.out.println("Insufficient eligible referees for match: " + match);
+                    System.out.println("There are not sufficient available referees for match: " + match);
                 } else {
                     // Assign referees to the match if all are assigned
                     match.setCentralReferee(centralRef);
@@ -752,9 +783,8 @@ public class Controller {
                     assigned=true;
                 }
             }
-        } else{
-            System.out.println("Sorry, the referees have already been assigned to matches");
-        }
+            
+        
         
     }
 
@@ -767,6 +797,175 @@ public class Controller {
             referees[i] = temp;
         }
     }
+    // Function to simulate goals for a match
+    public void simulateMatchGoals(Match match) {
+        Random random = new Random();
+        int homeScore = random.nextInt(5); // Randomize up to 4 goals for home
+        int awayScore = random.nextInt(5); // Randomize up to 4 goals for away
     
+        match.setHomeScore(homeScore);
+        match.setAwayScore(awayScore);
+    
+        // Simulate home team goals
+        for (int i = 0; i < homeScore; i++) {
+            Player scorer = match.getHomeTeam().getPlayers()[random.nextInt(match.getHomeTeam().getPlayers().length)];
+            Player assister = random.nextBoolean() ? match.getHomeTeam().getPlayers()[random.nextInt(match.getHomeTeam().getPlayers().length)] : null;
+            int minute = random.nextInt(91); // Random minute between 0 and 90
+            addGoalToMatch(match, scorer.getName(), assister != null ? assister.getName() : "none", minute);
+            incrementTotalGoalsForTeam(scorer, match); // Update the team's total goals
+        }
+    
+        // Simulate away team goals
+        for (int i = 0; i < awayScore; i++) {
+            Player scorer = match.getAwayTeam().getPlayers()[random.nextInt(match.getAwayTeam().getPlayers().length)];
+            Player assister = random.nextBoolean() ? match.getAwayTeam().getPlayers()[random.nextInt(match.getAwayTeam().getPlayers().length)] : null;
+            int minute = random.nextInt(91); // Random minute between 0 and 90
+            addGoalToMatch(match, scorer.getName(), assister != null ? assister.getName() : "none", minute);
+            incrementTotalGoalsForTeam(scorer, match); // Update the team's total goals
+        }
+    }
+    
+
+    public void incrementTotalGoalsForTeam(Player scorer, Match match) {
+        Team team = null;
+    
+        for (Player player : match.getHomeTeam().getPlayers()) {
+            if (player.equals(scorer)) {
+                team = match.getHomeTeam();
+                break;
+            }
+        }
+
+        if (team == null) {
+            for (Player player : match.getAwayTeam().getPlayers()) {
+                if (player.equals(scorer)) {
+                    team = match.getAwayTeam();
+                    break;
+                }
+            }
+        }
+
+        if (team == null) {
+            // Handle case where scorer is not found in either team
+            System.out.println("Error: Player " + scorer.getName() + " is not part of either team.");
+            return;
+        }
+        // Increment the team's total goals
+        team.incrementTotalGoals();
+    }
+    // Call this function for each match in the groups
+    public void simulateGroupMatches() {
+        for (Match match : groupAMatches) {
+            simulateMatchGoals(match);
+            updateMatchesPlayed(match.getHomeTeam());
+            updateMatchesPlayed(match.getAwayTeam());
+        }
+        for (Match match : groupBMatches) {
+            simulateMatchGoals(match);
+            updateMatchesPlayed(match.getHomeTeam());
+            updateMatchesPlayed(match.getAwayTeam());
+        }
+        
+        System.out.println("Scores simulated");
+    }
+
+    
+    // In Controller class
+    public Match[] getGroupAMatches() {
+        return groupAMatches;  
+    }
+
+    public Match[] getGroupBMatches() {
+        return groupBMatches;  
+    }
+    private int scoreCountGroupA = 0;
+    private int scoreCountGroupB = 0;
+
+    public void registerScoreManually(Match[] groupMatch, int homeScore, int awayScore, String group) {
+        if (group.equals("A")) {
+            groupMatch[scoreCountGroupA].setHomeScore(homeScore);
+            groupMatch[scoreCountGroupA].setAwayScore(awayScore);
+            groupMatch[scoreCountGroupA].printScore();  // Print the score after it's set
+            scoreCountGroupA++;  // Increment only for group A
+        } else if (group.equals("B")) {
+            groupMatch[scoreCountGroupB].setHomeScore(homeScore);
+            groupMatch[scoreCountGroupB].setAwayScore(awayScore);
+            groupMatch[scoreCountGroupB].printScore();  // Print the score after it's set
+            scoreCountGroupB++;  // Increment only for group B
+        }
+    }
+
+    public void addGoalToMatch(Match match, String scorerName, String assisterName, int minute) {
+        Player scorer = findPlayer(scorerName);
+        Player assister = assisterName.equalsIgnoreCase("none") ? null : findPlayer(assisterName);
+    
+        if (scorer != null) {
+            match.addGoalDetail(scorer, assister, minute);
+            scorer.incrementGoals();
+            //match.getHomeTeam().incrementTotalGoals(); // Method to increment the team's goal count
+            if (assister != null) {
+                assister.incrementAssists();
+            }
+        } else {
+            System.out.println("Player not found: " + scorerName);
+        }
+        
+    }
+    
+    public void showGameScores() {
+        for (Match match : groupAMatches) {
+            match.printScore();
+    
+            Team homeTeam = match.getHomeTeam();
+            Team awayTeam = match.getAwayTeam();
+    
+            if (match.getHomeScore() > match.getAwayScore()) {
+                // Home team wins
+                homeTeam.incrementMatchesWon();
+                awayTeam.incrementMatchesLost();
+            } else if (match.getAwayScore() > match.getHomeScore()) {
+                // Away team wins
+                awayTeam.incrementMatchesWon();
+                homeTeam.incrementMatchesLost();
+            } else {
+                // Draw
+                homeTeam.incrementMatchesDraw();
+                awayTeam.incrementMatchesDraw();
+            }
+        }
+    
+        for (Match match : groupBMatches) {
+            match.printScore();
+    
+            Team homeTeam = match.getHomeTeam();
+            Team awayTeam = match.getAwayTeam();
+    
+            if (match.getHomeScore() > match.getAwayScore()) {
+                // Home team wins
+                homeTeam.incrementMatchesWon();
+                awayTeam.incrementMatchesLost();
+            } else if (match.getAwayScore() > match.getHomeScore()) {
+                // Away team wins
+                awayTeam.incrementMatchesWon();
+                homeTeam.incrementMatchesLost();
+            } else {
+                // Draw
+                homeTeam.incrementMatchesDraw();
+                awayTeam.incrementMatchesDraw();
+            }
+        }
+    }
+    
+
+    public void updateMatchesPlayed(Team team) {
+        team.incrementMatchesPlayed();
+        for (Player player : team.getPlayers()) {
+            player.incrementMatchesPlayed();  
+        }
+    }
+    
+    
+
+
 
 }

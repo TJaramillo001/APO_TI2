@@ -100,4 +100,17 @@ public class Player extends Person{
     public void setMatchesPlayed(int matchesPlayed) {
         this.matchesPlayed = matchesPlayed;
     }
+    
+    public void incrementGoals() {
+        this.goalsScored++;
+    }
+    
+    public void incrementAssists() {
+        this.assists++;
+    }
+    
+    public void incrementMatchesPlayed() {
+        this.matchesPlayed++;
+    }
+    
 }

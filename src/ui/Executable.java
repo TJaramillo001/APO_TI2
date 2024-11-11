@@ -3,6 +3,8 @@ package ui;
 import java.lang.*;
 import java.util.*;
 import model.Controller;
+import model.GoalDetail;
+import model.Match;
 import model.PlayerPosition;
 import model.RefereeType;
 
@@ -168,7 +170,7 @@ public class Executable {
         boolean flag=cont.playerInfo(selection);
         
         if(!flag){
-            System.out.println("Sorry, we weren't able to find that team");
+            System.out.println("Sorry, we weren't able to find that Player");
         }
     }
     /**
@@ -194,8 +196,14 @@ public class Executable {
                                 "1. Generate fixture \n" + 
                                 "2. Consult Group generation \n" + 
                                 "3. Consult Matches \n" + 
-                                "4. Asign referees to games \n" + 
-                                "10. Exit \n");
+                                "4. Assign referees to games \n" + 
+                                "5. Register game scores \n" + 
+                                "6. Show final scores \n" +
+                                "10. Exit \n\n" +
+
+                                "15. Show Team Information \n" + 
+                                "20. Show Player Information \n" + 
+                                "25. Show Referee Information \n");
             select=in.nextInt();
             in.nextLine();
             switch (select) {
@@ -211,11 +219,26 @@ public class Executable {
                 case 4:
                     cont.assignReferee();
                     break;
+                case 5:
+                    registerScore();
+                    break;
+                case 6:
+                    cont.showGameScores();
+                    break;
                 case 10:
                     System.out.println("Thank you for using the application! Goodbye.");
                     flag=true;
                     in.close();
                     System.exit(0);
+                    break;
+                case 15:
+                    showTeamInfo();
+                    break;
+                case 20:
+                    showPlayerInfo();
+                    break;
+                case 25:
+                    showRefInfo();
                     break;
                 default:
                     System.out.println("Sorry, please select a valid option");
@@ -223,6 +246,60 @@ public class Executable {
             }
         }
     }
+
+    public void registerScore() {
+        System.out.println("To enter the scores manually, press 1. To simulate scores, press any number.");
+        int opt=in.nextInt();
+        in.nextLine();
+
+        if(opt==1){
+            System.out.println("Which group do you want to enter scores for? (A or B)");
+            String group = in.nextLine();
+
+            Match[] matches = group.equalsIgnoreCase("A") ? cont.getGroupAMatches() : cont.getGroupBMatches();
+
+            for (Match match : matches) {
+                System.out.println("Enter score for " + match.getHomeTeam().getTeamName() + " vs " + match.getAwayTeam().getTeamName());
+                System.out.print("Home score: ");
+                int homeScore = in.nextInt();
+                System.out.print("Away score: ");
+                int awayScore = in.nextInt();
+                in.nextLine(); // Clear the newline
+
+                for (int i = 0; i < homeScore; i++) {
+                    System.out.println("Enter details for goal #" + (i + 1) + " for " + match.getHomeTeam().getTeamName());
+                    System.out.print("Scorer: ");
+                    String scorer = in.nextLine();
+                    System.out.print("Assister (or type 'none'): ");
+                    String assister = in.nextLine();
+                    System.out.print("Minute: ");
+                    int minute = in.nextInt();
+                    in.nextLine(); // Clear the newline
+
+                    cont.addGoalToMatch(match, scorer, assister, minute);
+                }
+
+                for (int i = 0; i < awayScore; i++) {
+                    System.out.println("Enter details for goal #" + (i + 1) + " for " + match.getAwayTeam().getTeamName());
+                    System.out.print("Scorer: ");
+                    String scorer = in.nextLine();
+                    System.out.print("Assister (or type 'none'): ");
+                    String assister = in.nextLine();
+                    System.out.print("Minute: ");
+                    int minute = in.nextInt();
+                    in.nextLine(); // Clear the newline
+
+                    cont.addGoalToMatch(match, scorer, assister, minute);
+                }
+
+                // Display recorded goals
+                match.displayGoals();
+            }
+        }else{
+            cont.simulateGroupMatches();
+        }
+    }
+    
 
 
     public static void main(String[] args) {

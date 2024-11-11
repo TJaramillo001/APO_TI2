@@ -8,6 +8,7 @@ public class Team {
     private int matchesPlayed;
     private int matchesWon;
     private int matchesLost;
+    private int matchesDraw;
     private int goalsFor;
     private int goalsAgainst;
     private int yellowCards;
@@ -36,13 +37,14 @@ public class Team {
      * @param int yellowCards : Corresponds to the amount of yellow cards the players in this team have received
      * @param int redCards : Corresponds to the amount of red cards the players in this team have received
      */
-    public Team(String teamName, String country, String coachName, int matchesPlayed, int matchesWon, int matchesLost, int goalsFor, int goalsAgainst, int yellowCards, int redCards) {
+    public Team(String teamName, String country, String coachName, int matchesPlayed,int matchesDraw, int matchesWon, int matchesLost, int goalsFor, int goalsAgainst, int yellowCards, int redCards) {
         
         this.teamName = teamName;
         this.country = country;
         this.coachName = coachName;
         this.matchesPlayed = matchesPlayed;
         this.matchesWon = matchesWon;
+        this.matchesDraw=matchesDraw;
         this.matchesLost = matchesLost;
         this.goalsFor = goalsFor;
         this.goalsAgainst = goalsAgainst;
@@ -74,6 +76,22 @@ public class Team {
         if (!added) {
             System.out.println("Sorry. This team is already full");
         }
+    }
+
+    public void incrementTotalGoals(){
+        this.goalsFor++;
+    }
+    public void incrementMatchesPlayed(){
+        this.matchesPlayed++;
+    }
+    public void incrementMatchesWon(){
+        this.matchesWon++;
+    }
+    public void incrementMatchesLost(){
+        this.matchesLost++;
+    }
+    public void incrementMatchesDraw(){
+        this.matchesDraw++;
     }
     
     
@@ -109,6 +127,9 @@ public class Team {
         }
         
         return !playerNames.isEmpty() ? playerNames : "No players registered";
+    }
+    public int getMatchesDraw(){
+        return matchesDraw;
     }
     
     
