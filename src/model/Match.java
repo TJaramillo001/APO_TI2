@@ -1,5 +1,6 @@
 package model;
 import java.util.ArrayList;
+import java.util.List;
 
 import model.Referee;
 
@@ -12,33 +13,40 @@ public class Match {
     private int homeScore;
     private int awayScore;
     private ArrayList<GoalDetail> goalDetails;
+     private List<CardDetail> cardDetails;
+
 
     public Match() {
         this.goalDetails = new ArrayList<>();
+        this.cardDetails = new ArrayList<>();
     }
     
     public Match(Team homeTeam, Team awayTeam) {
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
         this.goalDetails = new ArrayList<>();
+        this.cardDetails = new ArrayList<>();
     }
     public Match(Team homeTeam, Team awayTeam, String matchDate) {
             this.homeTeam = homeTeam;
             this.awayTeam = awayTeam;
             this.matchDate = matchDate; // Date will be set separately
             this.goalDetails = new ArrayList<>();
+            this.cardDetails = new ArrayList<>();
     }
     public Match(Team homeTeam, Team awayTeam, String matchDate, Referee centralReferee) {
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
-        this.matchDate = matchDate; // Date will be set separately
+        this.matchDate = matchDate; 
         this.centralReferee=centralReferee;
         this.assistantReferees= new Referee[2];
         this.homeScore = 0;  
         this.awayScore = 0; //Scores are initially set as 0
         this.goalDetails = new ArrayList<GoalDetail>();
+        this.cardDetails = new ArrayList<>();
         
     }
+    
 
 
     // Returns match details as a string
@@ -51,14 +59,7 @@ public class Match {
     }
 
     public void addGoalDetail(Player scorer, Player assister, int minute) {
-        
-        if (scorer == null) {
-            System.out.println("Error: scorer is null");
-            return;
-        }
-    
         GoalDetail detail = new GoalDetail(scorer, assister, minute);
-
         goalDetails.add(detail);  
     }
     
@@ -70,6 +71,22 @@ public class Match {
             for (GoalDetail detail : goalDetails) {
                 System.out.println("Minute " + detail.getMinute() + ": " + detail.getScorer().getName() +
                         (detail.getAssister() != null ? " assisted by " + detail.getAssister().getName() : ""));
+            }
+        }
+    }
+
+    public void addCardDetail(Player person, CardType type, int minute){
+        CardDetail detail = new CardDetail(person, type, minute);
+        cardDetails.add(detail);
+    }
+    
+    public void showCards(){
+        if(cardDetails.isEmpty()){
+            System.out.println("No cards have been recorded for this match");
+        } else{
+            for(CardDetail detail : cardDetails){
+                System.out.println("Minute "+detail.getMinute() + ": "+detail.getPlayer().getName()+ 
+                detail.getCardType());
             }
         }
     }
@@ -87,6 +104,16 @@ public class Match {
     public String getDate() {
         return matchDate;
     }
+    public Referee getCentralReferee(){
+        return centralReferee;
+    }
+    public Referee getAss1Referee(){
+        return assistantReferees[0];
+    }
+    public Referee getAss2Referee(){
+        return assistantReferees[1];
+    }
+
     public void setCentralReferee(Referee centralReferee) {
         this.centralReferee=centralReferee;
     }
@@ -116,7 +143,15 @@ public class Match {
         this.matchDate = matchDate;
     }
 
-    // Editar
+    private boolean isScoreProcessed = false; // Flag
+
+    public boolean isScoreProcessed() {
+        return isScoreProcessed;
+    }
+
+    public void setScoreProcessed(boolean scoreProcessed) {
+        isScoreProcessed = scoreProcessed;
+    }
     
     
 }

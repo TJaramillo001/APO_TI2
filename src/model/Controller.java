@@ -198,7 +198,9 @@ public class Controller {
                                    "Matches Won: "+team.getMatchesWon() + "\n" +
                                    "Matches Lost: "+team.getMatchesLost()+ "\n" +
                                    "Goals For: "+team.getGoalsFor()+ "\n" +
-                                   "Goals Against: "+team.getGoalsAgainst());
+                                   "Goals Against: "+team.getGoalsAgainst()+ "\n" +
+                                   "Yellows: "+team.getYellowCards()+ "\n" +
+                                   "Reds: "+team.getRedCards()+ "\n");
                 return true;
             } 
         }
@@ -689,6 +691,7 @@ public class Controller {
             System.out.println("Sorry, the groups have not yet been generated.");
         }
     }
+
     public void consultMatches(){
         if(generated){
             System.out.println("\nMatches for Group A:");
@@ -810,7 +813,9 @@ public class Controller {
         for (int i = 0; i < homeScore; i++) {
             Player scorer = match.getHomeTeam().getPlayers()[random.nextInt(match.getHomeTeam().getPlayers().length)];
             Player assister = random.nextBoolean() ? match.getHomeTeam().getPlayers()[random.nextInt(match.getHomeTeam().getPlayers().length)] : null;
+            
             int minute = random.nextInt(91); // Random minute between 0 and 90
+            
             addGoalToMatch(match, scorer.getName(), assister != null ? assister.getName() : "none", minute);
             incrementTotalGoalsForTeam(scorer, match); // Update the team's total goals
         }
@@ -827,43 +832,50 @@ public class Controller {
     
 
     public void incrementTotalGoalsForTeam(Player scorer, Match match) {
-        Team team = null;
+        Team team1 = match.getHomeTeam();
+        Team team2 = match.getAwayTeam();
+        boolean check=false;
     
         for (Player player : match.getHomeTeam().getPlayers()) {
             if (player.equals(scorer)) {
-                team = match.getHomeTeam();
+                team1.incrementGoalsFor();
+                team2.incrementGoalsAgainst();
+                check=true;
                 break;
             }
         }
 
-        if (team == null) {
-            for (Player player : match.getAwayTeam().getPlayers()) {
-                if (player.equals(scorer)) {
-                    team = match.getAwayTeam();
-                    break;
-                }
+        
+        for (Player player : match.getAwayTeam().getPlayers()) {
+            if (player.equals(scorer)) {
+                team2.incrementGoalsFor();
+                team1.incrementGoalsAgainst();
+                check=true;
+                break;
             }
         }
+        
 
-        if (team == null) {
+        if (!check) {
             // Handle case where scorer is not found in either team
             System.out.println("Error: Player " + scorer.getName() + " is not part of either team.");
             return;
         }
-        // Increment the team's total goals
-        team.incrementTotalGoals();
+        
     }
-    // Call this function for each match in the groups
+
     public void simulateGroupMatches() {
         for (Match match : groupAMatches) {
             simulateMatchGoals(match);
             updateMatchesPlayed(match.getHomeTeam());
             updateMatchesPlayed(match.getAwayTeam());
+            updateMatchesOfficiated(match.getCentralReferee(), match.getAss1Referee(), match.getAss2Referee());
         }
         for (Match match : groupBMatches) {
             simulateMatchGoals(match);
             updateMatchesPlayed(match.getHomeTeam());
             updateMatchesPlayed(match.getAwayTeam());
+            updateMatchesOfficiated(match.getCentralReferee(), match.getAss1Referee(), match.getAss2Referee());
         }
         
         System.out.println("Scores simulated");
@@ -878,22 +890,7 @@ public class Controller {
     public Match[] getGroupBMatches() {
         return groupBMatches;  
     }
-    private int scoreCountGroupA = 0;
-    private int scoreCountGroupB = 0;
-
-    public void registerScoreManually(Match[] groupMatch, int homeScore, int awayScore, String group) {
-        if (group.equals("A")) {
-            groupMatch[scoreCountGroupA].setHomeScore(homeScore);
-            groupMatch[scoreCountGroupA].setAwayScore(awayScore);
-            groupMatch[scoreCountGroupA].printScore();  // Print the score after it's set
-            scoreCountGroupA++;  // Increment only for group A
-        } else if (group.equals("B")) {
-            groupMatch[scoreCountGroupB].setHomeScore(homeScore);
-            groupMatch[scoreCountGroupB].setAwayScore(awayScore);
-            groupMatch[scoreCountGroupB].printScore();  // Print the score after it's set
-            scoreCountGroupB++;  // Increment only for group B
-        }
-    }
+    
 
     public void addGoalToMatch(Match match, String scorerName, String assisterName, int minute) {
         Player scorer = findPlayer(scorerName);
@@ -902,7 +899,6 @@ public class Controller {
         if (scorer != null) {
             match.addGoalDetail(scorer, assister, minute);
             scorer.incrementGoals();
-            //match.getHomeTeam().incrementTotalGoals(); // Method to increment the team's goal count
             if (assister != null) {
                 assister.incrementAssists();
             }
@@ -911,61 +907,108 @@ public class Controller {
         }
         
     }
+    public void sendGoals(Match match, int homeScore, int awayScore){
+        match.setHomeScore(homeScore);
+        match.setAwayScore(awayScore);
+    }
     
     public void showGameScores() {
         for (Match match : groupAMatches) {
             match.printScore();
+            if (!match.isScoreProcessed()) {
+                
+        
+                Team homeTeam = match.getHomeTeam();
+                Team awayTeam = match.getAwayTeam();
+        
+                if (match.getHomeScore() > match.getAwayScore()) {
+                    // Home team wins
+                    homeTeam.incrementMatchesWon();
+                    awayTeam.incrementMatchesLost();
+                } else if (match.getAwayScore() > match.getHomeScore()) {
+                    // Away team wins
+                    awayTeam.incrementMatchesWon();
+                    homeTeam.incrementMatchesLost();
+                } else {
+                    // Draw
+                    homeTeam.incrementMatchesDraw();
+                    awayTeam.incrementMatchesDraw();
+                }
     
-            Team homeTeam = match.getHomeTeam();
-            Team awayTeam = match.getAwayTeam();
-    
-            if (match.getHomeScore() > match.getAwayScore()) {
-                // Home team wins
-                homeTeam.incrementMatchesWon();
-                awayTeam.incrementMatchesLost();
-            } else if (match.getAwayScore() > match.getHomeScore()) {
-                // Away team wins
-                awayTeam.incrementMatchesWon();
-                homeTeam.incrementMatchesLost();
-            } else {
-                // Draw
-                homeTeam.incrementMatchesDraw();
-                awayTeam.incrementMatchesDraw();
+                // Mark the match as processed
+                match.setScoreProcessed(true);
             }
         }
     
         for (Match match : groupBMatches) {
             match.printScore();
+            if (!match.isScoreProcessed()) {
+                
+        
+                Team homeTeam = match.getHomeTeam();
+                Team awayTeam = match.getAwayTeam();
+        
+                if (match.getHomeScore() > match.getAwayScore()) {
+                    homeTeam.incrementMatchesWon();
+                    awayTeam.incrementMatchesLost();
+                } else if (match.getAwayScore() > match.getHomeScore()) {
+                    awayTeam.incrementMatchesWon();
+                    homeTeam.incrementMatchesLost();
+                } else {
+                    homeTeam.incrementMatchesDraw();
+                    awayTeam.incrementMatchesDraw();
+                }
     
-            Team homeTeam = match.getHomeTeam();
-            Team awayTeam = match.getAwayTeam();
-    
-            if (match.getHomeScore() > match.getAwayScore()) {
-                // Home team wins
-                homeTeam.incrementMatchesWon();
-                awayTeam.incrementMatchesLost();
-            } else if (match.getAwayScore() > match.getHomeScore()) {
-                // Away team wins
-                awayTeam.incrementMatchesWon();
-                homeTeam.incrementMatchesLost();
-            } else {
-                // Draw
-                homeTeam.incrementMatchesDraw();
-                awayTeam.incrementMatchesDraw();
+                // Mark the match as processed
+                match.setScoreProcessed(true);
             }
         }
     }
     
-
     public void updateMatchesPlayed(Team team) {
         team.incrementMatchesPlayed();
         for (Player player : team.getPlayers()) {
             player.incrementMatchesPlayed();  
         }
     }
-    
-    
+    public void updateMatchesOfficiated(Referee central, Referee ass1, Referee ass2){
+        central.incrementMatchesOfficiated();
+        ass1.incrementMatchesOfficiated();
+        ass2.incrementMatchesOfficiated();
+    }
+
+    public void addCardToMatch(Match match, String playerName, String cardType, int minute, boolean which){
+        Player player = findPlayer(playerName);
+        Referee referee = match.getCentralReferee();
+        CardType card=null;
+
+        switch(cardType){
+            case "YELLOW":
+                card = CardType.YELLOW;
+                player.incrementYellowCards();
+                referee.incrementYellowCards();
+                if(which){
+                    match.getHomeTeam().incrementYellowCards();
+                } else {
+                    match.getAwayTeam().incrementYellowCards();
+                }
+            break;
+            case "RED":
+                card=CardType.RED;
+                player.incrementRedCards();
+                referee.incrementRedCards();
+                if(which){
+                    match.getHomeTeam().incrementRedCards();
+                } else {
+                    match.getAwayTeam().incrementRedCards();
+                }
+            break;
+        }
 
 
-
+        if(player!=null){
+            match.addCardDetail(player, card, minute);
+            
+        }
+    }
 }

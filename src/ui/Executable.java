@@ -199,6 +199,7 @@ public class Executable {
                                 "4. Assign referees to games \n" + 
                                 "5. Register game scores \n" + 
                                 "6. Show final scores \n" +
+                                "7. Register cards \n" +
                                 "10. Exit \n\n" +
 
                                 "15. Show Team Information \n" + 
@@ -224,6 +225,9 @@ public class Executable {
                     break;
                 case 6:
                     cont.showGameScores();
+                    break;
+                case 7:
+                    registerCards();
                     break;
                 case 10:
                     System.out.println("Thank you for using the application! Goodbye.");
@@ -262,10 +266,13 @@ public class Executable {
                 System.out.println("Enter score for " + match.getHomeTeam().getTeamName() + " vs " + match.getAwayTeam().getTeamName());
                 System.out.print("Home score: ");
                 int homeScore = in.nextInt();
+                in.nextLine();
+
                 System.out.print("Away score: ");
                 int awayScore = in.nextInt();
                 in.nextLine(); // Clear the newline
-
+                cont.sendGoals(match, homeScore, awayScore);
+              
                 for (int i = 0; i < homeScore; i++) {
                     System.out.println("Enter details for goal #" + (i + 1) + " for " + match.getHomeTeam().getTeamName());
                     System.out.print("Scorer: ");
@@ -275,7 +282,7 @@ public class Executable {
                     System.out.print("Minute: ");
                     int minute = in.nextInt();
                     in.nextLine(); // Clear the newline
-
+                    
                     cont.addGoalToMatch(match, scorer, assister, minute);
                 }
 
@@ -297,6 +304,56 @@ public class Executable {
             }
         }else{
             cont.simulateGroupMatches();
+        }
+    }
+    public void registerCards(){
+        System.out.println("To enter the cards manually, press 1");
+        
+        System.out.println("Which group do you want to enter cards for? (A or B)");
+        String group = in.nextLine();
+
+        Match[] matches = group.equalsIgnoreCase("A") ? cont.getGroupAMatches() : cont.getGroupBMatches();
+
+        for (Match match : matches) {
+            System.out.println("Enter the cards awarded in " + match.getHomeTeam().getTeamName() + " vs " + match.getAwayTeam().getTeamName());
+            System.out.print("Home cards: ");
+            int homeCards = in.nextInt();
+            in.nextLine();
+
+            System.out.print("Away cards: ");
+            int awayCards = in.nextInt();
+            in.nextLine();
+
+            for(int i=0; i<homeCards;i++){
+                System.out.println("Enter the details for card #"+(i+1)+" for "+match.getHomeTeam().getTeamName());
+                System.out.println("Player who commited the foul: ");
+                String player = in.nextLine();
+
+                System.out.println("Card awarded (YELLOW or RED)");
+                String cardType = in.nextLine().toUpperCase();
+
+                System.out.print("Minute: ");
+                int minute = in.nextInt();
+                in.nextLine(); // Clear the newline
+
+                cont.addCardToMatch(match, player, cardType, minute, true); //True is for home team
+            }
+            for(int i=0; i<awayCards;i++){
+                System.out.println("Enter the details for card #"+(i+1)+" for "+match.getAwayTeam().getTeamName());
+                System.out.println("Player who commited the foul: ");
+                String player = in.nextLine();
+
+                System.out.println("Card awarded (YELLOW or RED)");
+                String cardType = in.nextLine().toUpperCase();
+
+                System.out.print("Minute: ");
+                int minute = in.nextInt();
+                in.nextLine(); // Clear the newline
+
+                cont.addCardToMatch(match, player, cardType, minute, false); //False is for away team
+            }
+
+
         }
     }
     

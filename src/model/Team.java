@@ -78,8 +78,11 @@ public class Team {
         }
     }
 
-    public void incrementTotalGoals(){
+    public void incrementGoalsFor(){
         this.goalsFor++;
+    }
+    public void incrementGoalsAgainst(){
+        this.goalsAgainst++;
     }
     public void incrementMatchesPlayed(){
         this.matchesPlayed++;
@@ -92,6 +95,12 @@ public class Team {
     }
     public void incrementMatchesDraw(){
         this.matchesDraw++;
+    }
+    public void incrementYellowCards() {
+        this.yellowCards++;
+    }
+    public void incrementRedCards() {
+        this.redCards++;
     }
     
     

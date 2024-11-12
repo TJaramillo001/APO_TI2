@@ -48,57 +48,28 @@ public class Player extends Person{
     public int getPlayerNum() {
         return playerNum;
     }
-
-    public void setPlayerNum(int playerNum) {
-        this.playerNum = playerNum;
-    }
     
     public PlayerPosition getPlayerPosition(){
         return playerPosition;
-    }
-
-    public void setPlayerPosition(PlayerPosition playerPosition){
-        this.playerPosition=playerPosition;
     }
 
     public int getGoalsScored() {
         return goalsScored;
     }
 
-    public void setGoalsScored(int goalsScored) {
-        this.goalsScored = goalsScored;
-    }
-
     public int getAssists() {
         return assists;
     }
-
-    public void setAssists(int assists) {
-        this.assists = assists;
-    }
-
     public int getYellowCards() {
         return yellowCards;
-    }
-
-    public void setYellowCards(int yellowCards) {
-        this.yellowCards = yellowCards;
     }
 
     public int getRedCards() {
         return redCards;
     }
 
-    public void setRedCards(int redCards) {
-        this.redCards = redCards;
-    }
-
     public int getMatchesPlayed() {
         return matchesPlayed;
-    }
-
-    public void setMatchesPlayed(int matchesPlayed) {
-        this.matchesPlayed = matchesPlayed;
     }
     
     public void incrementGoals() {
@@ -111,6 +82,12 @@ public class Player extends Person{
     
     public void incrementMatchesPlayed() {
         this.matchesPlayed++;
+    }
+    public void incrementYellowCards() {
+        this.yellowCards++;
+    }
+    public void incrementRedCards() {
+        this.redCards++;
     }
     
 }

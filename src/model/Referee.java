@@ -59,25 +59,26 @@ public class Referee extends Person{
         return matchesOfficiated;
     }
 
-    public void setMatchesOfficiated(int matchesOfficiated) {
-        this.matchesOfficiated = matchesOfficiated;
+    public void incrementMatchesOfficiated() {
+        this.matchesOfficiated++;
     }
 
     public int getYellowsGiven() {
         return yellowsGiven;
     }
 
-    public void setYellowsGiven(int yellowsGiven) {
-        this.yellowsGiven = yellowsGiven;
-    }
-
     public int getRedsGiven() {
         return redsGiven;
     }
 
-    public void setRedsGiven(int redsGiven) {
-        this.redsGiven = redsGiven;
+    public void incrementYellowCards(){
+        this.yellowsGiven++;
     }
+
+    public void incrementRedCards(){
+        this.redsGiven++;
+    }
+
     
 
 }
