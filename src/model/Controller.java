@@ -786,9 +786,6 @@ public class Controller {
                     assigned=true;
                 }
             }
-            
-        
-        
     }
 
     private void shuffleReferees(Referee[] referees) {
@@ -845,7 +842,6 @@ public class Controller {
             }
         }
 
-        
         for (Player player : match.getAwayTeam().getPlayers()) {
             if (player.equals(scorer)) {
                 team2.incrementGoalsFor();
@@ -1011,4 +1007,54 @@ public class Controller {
             
         }
     }
+    
+    public void printStandings(){
+        for(Group group : groups){
+            Team[] temp = group.getTeams();
+            for(int i=0; i<temp.length;i++){
+                for(int j=0;j<temp.length-1; j++){
+
+                    int points1 = ((temp[j].getMatchesWon()*3)+(temp[j].getMatchesDraw()*1));
+                    int points2 = ((temp[j+1].getMatchesWon()*3)+(temp[j+1].getMatchesDraw()*1));
+                    
+                    if (points2 > points1) {
+                        Team holder = temp[j];   // Swap j and j + 1
+                        temp[j] = temp[j + 1];
+                        temp[j + 1] = holder;
+                    } else if (points1 == points2) {
+                        int goalDifference1 = temp[j].getGoalsFor() - temp[j].getGoalsAgainst();
+                        int goalDifference2 = temp[j + 1].getGoalsFor() - temp[j + 1].getGoalsAgainst();
+                        if (goalDifference2 > goalDifference1) {
+                            Team holder = temp[j]; // Swap j and j + 1
+                            temp[j] = temp[j + 1];
+                            temp[j + 1] = holder;
+                        }
+                    }
+
+                }
+            }
+            System.out.printf(  "%-20s %2s %2s %2s %2s %2s %2s %2s %2s%n", 
+                            "Team", "PJ", "G", "E", "P", "GF", "GC", "DG", "Pts");
+            for (Team team : group.getTeams()){
+                int matchesPlayed = team.getMatchesPlayed();
+                int points = (team.getMatchesWon()*3)+(team.getMatchesDraw()*1);
+                int goalDifference = team.getGoalsFor() - team.getGoalsAgainst();
+                System.out.printf(  "%-20s %2d %2d %2d %2d %2d %2d %2d %2d%n",
+                                            team.getTeamName(),
+                                            matchesPlayed,
+                                            team.getMatchesWon(),
+                                            team.getMatchesDraw(),
+                                            team.getMatchesLost(),
+                                            team.getGoalsFor(),
+                                            team.getGoalsAgainst(),
+                                            goalDifference,
+                                            points);
+                
+            }
+            System.out.println("\n");
+        }
+        
+        
+    }
+
 }

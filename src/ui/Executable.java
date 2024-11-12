@@ -200,6 +200,7 @@ public class Executable {
                                 "5. Register game scores \n" + 
                                 "6. Show final scores \n" +
                                 "7. Register cards \n" +
+                                "8. Print Standings \n" +
                                 "10. Exit \n\n" +
 
                                 "15. Show Team Information \n" + 
@@ -228,6 +229,9 @@ public class Executable {
                     break;
                 case 7:
                     registerCards();
+                    break;
+                case 8:
+                    cont.printStandings();
                     break;
                 case 10:
                     System.out.println("Thank you for using the application! Goodbye.");
