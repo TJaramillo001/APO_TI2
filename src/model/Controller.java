@@ -1,6 +1,7 @@
 package model;
 import model.*;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Controller {
@@ -1007,7 +1008,8 @@ public class Controller {
             
         }
     }
-    
+    private boolean standingsPrinted;
+    private ArrayList<Team> semifinals = new ArrayList<>();
     public void printStandings(){
         for(Group group : groups){
             Team[] temp = group.getTeams();
@@ -1035,13 +1037,13 @@ public class Controller {
             }
             System.out.printf(  "%-20s %2s %2s %2s %2s %2s %2s %2s %2s%n", 
                             "Team", "PJ", "G", "E", "P", "GF", "GC", "DG", "Pts");
+            int counter = 0;
             for (Team team : group.getTeams()){
-                int matchesPlayed = team.getMatchesPlayed();
                 int points = (team.getMatchesWon()*3)+(team.getMatchesDraw()*1);
                 int goalDifference = team.getGoalsFor() - team.getGoalsAgainst();
                 System.out.printf(  "%-20s %2d %2d %2d %2d %2d %2d %2d %2d%n",
                                             team.getTeamName(),
-                                            matchesPlayed,
+                                            team.getMatchesPlayed(),
                                             team.getMatchesWon(),
                                             team.getMatchesDraw(),
                                             team.getMatchesLost(),
@@ -1049,12 +1051,29 @@ public class Controller {
                                             team.getGoalsAgainst(),
                                             goalDifference,
                                             points);
-                
+                if (counter!=2){
+                    semifinals.add(team);
+                    counter++;
+                }
             }
             System.out.println("\n");
         }
         
-        
+        standingsPrinted=true;
+    }
+    public boolean verifyTwo(){
+        if(standingsPrinted){
+            return true;
+        } else {
+            System.out.println("Please verify that all matches have been played and that the standings have been updated before advancing to the semi finals.");
+            return false;
+        }
+
+    }
+    public void createAndShowSemis(){
+        for(Team teams : semifinals){
+            System.out.println(teams.getTeamName());
+        }
     }
 
 }

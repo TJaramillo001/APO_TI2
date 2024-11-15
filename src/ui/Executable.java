@@ -23,7 +23,7 @@ public class Executable {
      * Description: Considered as the menu. The run method is what the user primarily interacts with
      * @param boolean flag: Initialized as false. Used to cycle the loop for as long as the program runs. When switched to true, a Systenm.exit method is used
      */
-    public void run_one(boolean flag){
+    public void run_register(boolean flag){
         flag=false;
         System.out.println("Welcome to the Soccer Tournament.");
         while(!flag){
@@ -187,7 +187,7 @@ public class Executable {
             System.out.println("Sorry, we weren't able to find that referee");
         }
     }
-    public void run_two(){
+    public void run_group(){
         boolean flag=false;
         int select;
         while (!flag) {
@@ -201,6 +201,7 @@ public class Executable {
                                 "6. Show final scores \n" +
                                 "7. Register cards \n" +
                                 "8. Print Standings \n" +
+                                "9. Advance to the semifinals\n"+
                                 "10. Exit \n\n" +
 
                                 "15. Show Team Information \n" + 
@@ -232,6 +233,11 @@ public class Executable {
                     break;
                 case 8:
                     cont.printStandings();
+                    break;
+                case 9:
+                    if(cont.verifyTwo()){
+                        flag=true;
+                    }
                     break;
                 case 10:
                     System.out.println("Thank you for using the application! Goodbye.");
@@ -360,13 +366,53 @@ public class Executable {
 
         }
     }
+    public void run_semifinals(){
+        boolean flag=false;
+        int select;
+        while (!flag) {
+            System.out.println("\n\nWelcome to the Semi Finals:\n");
+			System.out.println( "Please select one of the following:\n" + 
+                                "1. Consult Matches\n" + 
+                                "2. Assign referees to games \n" + 
+                                "3. Register Scores for Match 1\n" + 
+                                "4. Register Scores for Match 2 \n" + 
+                                
+                               
+                                "10. Exit \n\n" +
+
+                                "15. Show Team Information \n" + 
+                                "20. Show Player Information \n" + 
+                                "25. Show Referee Information \n");
+            select=in.nextInt();
+            in.nextLine();
+            switch (select) {
+                case 1:
+                    cont.createAndShowSemis();
+                break;
+                case 2:
+
+                break;
+                case 3:
+
+                break;
+                case 4:
+
+                break;
+                default:
+
+                break;
+            }
+        }
+
+    }
     
 
 
     public static void main(String[] args) {
 		Executable main = new Executable();
-		main.run_one(flag);
-        main.run_two();
+		main.run_register(flag);
+        main.run_group();
+        main.run_semifinals();
 	}
 
 }

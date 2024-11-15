@@ -13,7 +13,7 @@ public class Match {
     private int homeScore;
     private int awayScore;
     private ArrayList<GoalDetail> goalDetails;
-     private List<CardDetail> cardDetails;
+    private List<CardDetail> cardDetails;
 
 
     public Match() {
