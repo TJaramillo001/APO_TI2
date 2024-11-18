@@ -12,12 +12,14 @@ public class Executable {
     private Scanner in;
 	private Controller cont;
 	private static boolean flag;
+    private boolean semis;
     /**
      * Description: Initializes the Executable class. Initializes scanner and controller class
      */
 	private Executable() {
 		in = new Scanner(System.in);
 		cont = new Controller();
+        semis=false;
 	}
     /**
      * Description: Considered as the menu. The run method is what the user primarily interacts with
@@ -237,6 +239,7 @@ public class Executable {
                 case 9:
                     if(cont.verifyTwo()){
                         flag=true;
+                        semis=true;
                     }
                     break;
                 case 10:
@@ -261,7 +264,9 @@ public class Executable {
         }
     }
 
+
     public void registerScore() {
+   
         System.out.println("To enter the scores manually, press 1. To simulate scores, press any number.");
         int opt=in.nextInt();
         in.nextLine();
@@ -271,7 +276,6 @@ public class Executable {
             String group = in.nextLine();
 
             Match[] matches = group.equalsIgnoreCase("A") ? cont.getGroupAMatches() : cont.getGroupBMatches();
-
             for (Match match : matches) {
                 System.out.println("Enter score for " + match.getHomeTeam().getTeamName() + " vs " + match.getAwayTeam().getTeamName());
                 System.out.print("Home score: ");
@@ -282,7 +286,7 @@ public class Executable {
                 int awayScore = in.nextInt();
                 in.nextLine(); // Clear the newline
                 cont.sendGoals(match, homeScore, awayScore);
-              
+                
                 for (int i = 0; i < homeScore; i++) {
                     System.out.println("Enter details for goal #" + (i + 1) + " for " + match.getHomeTeam().getTeamName());
                     System.out.print("Scorer: ");
@@ -292,10 +296,9 @@ public class Executable {
                     System.out.print("Minute: ");
                     int minute = in.nextInt();
                     in.nextLine(); // Clear the newline
-                    
+                        
                     cont.addGoalToMatch(match, scorer, assister, minute);
                 }
-
                 for (int i = 0; i < awayScore; i++) {
                     System.out.println("Enter details for goal #" + (i + 1) + " for " + match.getAwayTeam().getTeamName());
                     System.out.print("Scorer: ");
@@ -312,10 +315,12 @@ public class Executable {
                 // Display recorded goals
                 match.displayGoals();
             }
+
         }else{
             cont.simulateGroupMatches();
-        }
+        }        
     }
+
     public void registerCards(){
         System.out.println("To enter the cards manually, press 1");
         
@@ -373,11 +378,10 @@ public class Executable {
             System.out.println("\n\nWelcome to the Semi Finals:\n");
 			System.out.println( "Please select one of the following:\n" + 
                                 "1. Consult Matches\n" + 
-                                "2. Assign referees to games \n" + 
-                                "3. Register Scores for Match 1\n" + 
-                                "4. Register Scores for Match 2 \n" + 
-                                
-                               
+                                "2. Register Scores for Match 1\n" + 
+                                "3. Register Scores for Match 2 \n" + 
+                                "4. Register Cards \n"+
+                                "5. Advance to the Finals \n"+
                                 "10. Exit \n\n" +
 
                                 "15. Show Team Information \n" + 
@@ -385,26 +389,339 @@ public class Executable {
                                 "25. Show Referee Information \n");
             select=in.nextInt();
             in.nextLine();
+            
             switch (select) {
                 case 1:
                     cont.createAndShowSemis();
                 break;
                 case 2:
-
+                    registerSemifinalScore();
                 break;
                 case 3:
-
+                    registerSemifinalScore();
                 break;
                 case 4:
-
+                    registerSemiCards();
                 break;
+                case 5:
+                    if(cont.verifyFinals()){
+                        flag = true;
+                    } else {
+                        System.out.println("Please enter the scores before attempting to advance to the Finals");
+                    }
+                    break;
+                case 10:
+                    System.out.println("Thank you for using the application!");
+                    in.close();
+                    System.exit(0);
+                break;
+                case 15:
+                    showTeamInfo();
+                    break;
+                case 20:
+                    showPlayerInfo();
+                    break;
+                case 25:
+                    showRefInfo();
+                    break;
                 default:
-
-                break;
+                    System.out.println("Sorry, please select a valid option");
+                    continue;
             }
         }
 
     }
+
+    private boolean which = true;
+    private boolean scored = false;
+    public void registerSemifinalScore(){
+        if(!scored){    
+            if(which){
+                System.out.println("Please enter the score for "+cont.getSemiOneHomeTeam()+ " vs "+cont.getSemiOneAwayTeam());
+                System.out.println("Home Score:");
+                int homeScore = in.nextInt();
+                in.nextLine();
+
+                System.out.println("Away Score:");
+                int awayScore = in.nextInt();
+                in.nextLine();
+                while(homeScore==awayScore){
+                    System.out.println("Teams cannot tie in the semifinals. Please enter the scores again: ");
+                    System.out.println("Home Score:");
+                    homeScore = in.nextInt();
+                    in.nextLine();
+
+                    System.out.println("Away Score:");
+                    awayScore = in.nextInt();
+                    in.nextLine();
+                }
+
+                for (int i = 0; i < homeScore; i++) {
+                    System.out.println("Enter details for goal #" + (i + 1) + " for " + cont.getSemiOneHomeTeam());
+                    System.out.print("Scorer: ");
+                    String scorer = in.nextLine();
+                    System.out.print("Assister (or type 'none'): ");
+                    String assister = in.nextLine();
+                    System.out.print("Minute: ");
+                    int minute = in.nextInt();
+                    in.nextLine(); // Clear the newline
+                    
+                    cont.goalMiddleman(true, scorer, assister, minute);
+                }
+
+                for (int i = 0; i < awayScore; i++) {
+                    System.out.println("Enter details for goal #" + (i + 1) + " for " + cont.getSemiOneAwayTeam());
+                    System.out.print("Scorer: ");
+                    String scorer = in.nextLine();
+                    System.out.print("Assister (or type 'none'): ");
+                    String assister = in.nextLine();
+                    System.out.print("Minute: ");
+                    int minute = in.nextInt();
+                    in.nextLine(); // Clear the newline
+
+                    cont.goalMiddleman(true, scorer, assister, minute);
+                }
+                which=false;
+                cont.calculateWinner(1 ,homeScore, awayScore);
+            } else {
+                System.out.println("Please enter the score for "+cont.getSemiTwoHomeTeam()+ " vs "+cont.getSemiTwoAwayTeam());
+                System.out.println("Home Score:");
+                int homeScore = in.nextInt();
+                in.nextLine();
+
+                System.out.println("Away Score:");
+                int awayScore = in.nextInt();
+                in.nextLine();
+
+                while(homeScore==awayScore){
+                    System.out.println("Teams cannot tie in the semifinals. Please enter the scores again: ");
+                    System.out.println("Home Score:");
+                    homeScore = in.nextInt();
+                    in.nextLine();
+
+                    System.out.println("Away Score:");
+                    awayScore = in.nextInt();
+                    in.nextLine();
+                }
+                
+
+
+                for (int i = 0; i < homeScore; i++) {
+                    System.out.println("Enter details for goal #" + (i + 1) + " for " + cont.getSemiTwoHomeTeam());
+                    System.out.print("Scorer: ");
+                    String scorer = in.nextLine();
+                    System.out.print("Assister (or type 'none'): ");
+                    String assister = in.nextLine();
+                    System.out.print("Minute: ");
+                    int minute = in.nextInt();
+                    in.nextLine(); // Clear the newline
+                    
+                    cont.goalMiddleman(false, scorer, assister, minute);
+                }
+
+                for (int i = 0; i < awayScore; i++) {
+                    System.out.println("Enter details for goal #" + (i + 1) + " for " + cont.getSemiTwoAwayTeam());
+                    System.out.print("Scorer: ");
+                    String scorer = in.nextLine();
+                    System.out.print("Assister (or type 'none'): ");
+                    String assister = in.nextLine();
+                    System.out.print("Minute: ");
+                    int minute = in.nextInt();
+                    in.nextLine(); // Clear the newline
+
+                    cont.goalMiddleman(false, scorer, assister, minute);
+                }
+                cont.calculateWinner(2 ,homeScore, awayScore);
+            }
+
+        } else {
+            System.out.println("Sorry, you have already input both scores.");
+        }
+    }
+    public void registerSemiCards(){
+        System.out.println("Enter the cards awarded in " + cont.getSemiOneHomeTeam() + " vs " + cont.getSemiOneAwayTeam());
+        System.out.print("Home cards: ");
+        int homeCards = in.nextInt();
+        in.nextLine();
+
+        System.out.print("Away cards: ");
+        int awayCards = in.nextInt();
+            in.nextLine();
+
+            for(int i=0; i<homeCards;i++){
+                System.out.println("Enter the details for card #"+(i+1)+" for "+cont.getSemiOneHomeTeam());
+                System.out.println("Player who commited the foul: ");
+                String player = in.nextLine();
+
+                System.out.println("Card awarded (YELLOW or RED)");
+                String cardType = in.nextLine().toUpperCase();
+
+                System.out.print("Minute: ");
+                int minute = in.nextInt();
+                in.nextLine(); // Clear the newline
+
+                cont.cardMiddleman(true, player, cardType, minute, true); //True is for home team
+            }
+            for(int i=0; i<awayCards;i++){
+                System.out.println("Enter the details for card #"+(i+1)+" for "+cont.getSemiOneAwayTeam());
+                System.out.println("Player who commited the foul: ");
+                String player = in.nextLine();
+
+                System.out.println("Card awarded (YELLOW or RED)");
+                String cardType = in.nextLine().toUpperCase();
+
+                System.out.print("Minute: ");
+                int minute = in.nextInt();
+                in.nextLine(); // Clear the newline
+
+                cont.cardMiddleman(false, player, cardType, minute, false); //False is for away team
+            }
+    }
+    public void run_finals(){
+        boolean flag=false;
+        int select;
+        cont.createFinals();
+        
+        while (!flag) {
+            System.out.println("\n\nWelcome to the Finals:\n");
+			System.out.println( "Please select one of the following:\n" + 
+                                "1. Consult Match\n" + 
+                                "2. Consult Referees\n" + 
+                                "3. Register Scores\n" + 
+                                "4. Register Cards \n"+
+                                "5. Advance to the prize ceremony \n"+
+                                "10. Exit \n\n" +
+
+                                "15. Show Team Information \n" + 
+                                "20. Show Player Information \n" + 
+                                "25. Show Referee Information \n");
+            select=in.nextInt();
+            in.nextLine();
+            
+            switch (select) {
+                case 1:
+                    cont.showFinals();
+                break;
+                case 2:
+                    cont.showFinalsReferees();
+                break;
+                case 3:
+                    registerFinalScore();
+                break;
+                case 4:
+                    registerFinalCards();
+                break;
+                case 10:
+                    System.out.println("Thank you for using the application!");
+                    in.close();
+                    System.exit(0);
+                break;
+                case 15:
+                    showTeamInfo();
+                    break;
+                case 20:
+                    showPlayerInfo();
+                    break;
+                case 25:
+                    showRefInfo();
+                    break;
+                default:
+                    System.out.println("Sorry, please select a valid option");
+                    continue;
+            }
+        }
+
+    }
+    private boolean finals=false;
+    public void registerFinalScore(){
+        if(!finals){
+            System.out.println("Please enter the score for "+cont.getFinalsHomeTeam()+ " vs "+cont.getFinalsAwayTeam());
+            System.out.println("Home Score:");
+            int homeScore = in.nextInt();
+            in.nextLine();
+
+            System.out.println("Away Score:");
+            int awayScore = in.nextInt();
+            in.nextLine();
+            while(homeScore==awayScore){
+                System.out.println("Teams cannot tie in the finals. Please enter the scores again: ");
+                System.out.println("Home Score:");
+                homeScore = in.nextInt();
+                in.nextLine();
+
+                System.out.println("Away Score:");
+                awayScore = in.nextInt();
+                in.nextLine();
+            }
+
+            for (int i = 0; i < homeScore; i++) {
+                System.out.println("Enter details for goal #" + (i + 1) + " for " + cont.getFinalsHomeTeam());
+                System.out.print("Scorer: ");
+                String scorer = in.nextLine();
+                System.out.print("Assister (or type 'none'): ");
+                String assister = in.nextLine();
+                System.out.print("Minute: ");
+                int minute = in.nextInt();
+                in.nextLine(); // Clear the newline
+                    
+                cont.goalMiddleman(true, scorer, assister, minute);
+            }
+
+            for (int i = 0; i < awayScore; i++) {
+                System.out.println("Enter details for goal #" + (i + 1) + " for " + cont.getFinalsAwayTeam());
+                System.out.print("Scorer: ");
+                String scorer = in.nextLine();
+                System.out.print("Assister (or type 'none'): ");
+                String assister = in.nextLine();
+                System.out.print("Minute: ");
+                int minute = in.nextInt();
+                in.nextLine(); // Clear the newline
+
+                cont.finalsMiddleman(scorer, assister, minute);
+            }
+        }       
+    }
+
+    public void registerFinalCards(){
+        System.out.println("Please enter the cards awarded in " + cont.getFinalsHomeTeam() + " vs " + cont.getFinalsAwayTeam());
+        System.out.println("Home Cards:");
+        int homeCards = in.nextInt();
+        in.nextLine();
+
+        System.out.println("Away Cards:");
+        int awayCards = in.nextInt();
+        in.nextLine();
+
+        for(int i=0; i<homeCards;i++){
+            System.out.println("Enter the details for card #"+(i+1)+" for "+cont.getFinalsHomeTeam());
+            System.out.println("Player who commited the foul: ");
+            String player = in.nextLine();
+
+            System.out.println("Card awarded (YELLOW or RED)");
+            String cardType = in.nextLine().toUpperCase();
+
+            System.out.print("Minute: ");
+            int minute = in.nextInt();
+            in.nextLine(); // Clear the newline
+
+            cont.cardFMiddleman(player, cardType, minute, true); //True is for home team
+        }
+        for(int i=0; i<awayCards;i++){
+            System.out.println("Enter the details for card #"+(i+1)+" for "+cont.getFinalsAwayTeam());
+            System.out.println("Player who commited the foul: ");
+            String player = in.nextLine();
+
+            System.out.println("Card awarded (YELLOW or RED)");
+            String cardType = in.nextLine().toUpperCase();
+
+            System.out.print("Minute: ");
+            int minute = in.nextInt();
+            in.nextLine(); // Clear the newline
+
+            cont.cardFMiddleman(player, cardType, minute, false); //False is for away team
+        }
+    }
+
     
 
 
@@ -413,6 +730,7 @@ public class Executable {
 		main.run_register(flag);
         main.run_group();
         main.run_semifinals();
+        main.run_finals();
 	}
 
 }

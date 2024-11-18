@@ -5,14 +5,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Controller {
-    private int roundCount; 
-    /*  This number is used to keep track of each stage of the code. 
-        if == 0, then we are at the registration stage
-        if == 1, registration state has finished, group stage has begun
-        if == 2, group stage is over, semi finals begin
-        if == 3, semifinals are over, finals begin
-        if == 4, tournament has concluded, prizes are awarded.
-     */
+    
     private Team[] teams;
     private Player[] players;
     private Referee[] referees;
@@ -447,7 +440,7 @@ public class Controller {
 
             // Adding 20 players to Peru's national team
             registerPlayer("Pedro Gallese", 1, PlayerPosition.GOALKEEPER, "Peru", "Peru");
-            registerPlayer("Luis Advincula", 17, PlayerPosition.DEFENDER, "Peru", "Peru");
+            registerPlayer("Luis Juarez", 17, PlayerPosition.DEFENDER, "Peru", "Peru");
             registerPlayer("Renato Tapia", 13, PlayerPosition.MIDFIELDER, "Peru", "Peru");
             registerPlayer("Paolo Guerrero", 9, PlayerPosition.FORWARD, "Peru", "Peru");
             registerPlayer("Andre Carrillo", 18, PlayerPosition.FORWARD, "Peru", "Peru");
@@ -562,6 +555,10 @@ public class Controller {
             return String.format("%02d-%02d-%d", day, month, year);
         }
     }
+
+    private CustomDate initialDate = new CustomDate(15, 11, 2024);  // Starting date for the fixture
+
+
     public void generateFixture() {
         
         if(!generated){
@@ -595,9 +592,6 @@ public class Controller {
                 
             }
             // Generate matches for each group
-            
-
-            CustomDate initialDate = new CustomDate(15, 11, 2024);  // Starting date for the fixture
             CustomDate matchDate = new CustomDate(initialDate.day, initialDate.month, initialDate.year);  // The first match date
 
             // Track last match date for each team (initialize with the start date)
@@ -727,8 +721,8 @@ public class Controller {
         }
     }
 
-    public void assignReferee(Match[] groupMatch) {        
-            for (Match match : groupMatch) {
+    public void assignReferee(Match[] matches) {        
+            for (Match match : matches) {
                 Referee centralRef = null;
                 Referee[] assistantRefs = new Referee[2];
                 int assistantCount = 0;
@@ -788,6 +782,67 @@ public class Controller {
                 }
             }
     }
+
+    public void assignReferee(Match match) {        
+        
+        Referee centralRef = null;
+        Referee[] assistantRefs = new Referee[2];
+        int assistantCount = 0;
+
+        shuffleReferees(referees);
+
+        System.out.println("\nThe referees for:");
+        match.displayMatch();
+    
+        for (Referee ref : referees) {
+            // Check if the referee is from a different country than either team
+            if (!ref.getCountry().equals(match.getHomeTeam().getCountry()) && !ref.getCountry().equals(match.getAwayTeam().getCountry())) {
+    
+                // Assign central referee if not already assigned
+                if (ref.getRefType() == RefereeType.CENTRAL && centralRef == null) {
+                    centralRef = ref;
+                                            }
+                // Assign assistant referees if needed
+                else if (ref.getRefType() == RefereeType.ASSISTANT && assistantCount < 2) {
+                    assistantRefs[assistantCount] = ref;
+                        
+                    assistantCount++;
+                }
+            }
+            // Stop searching if we have assigned the central and both assistants
+            if (centralRef != null && assistantCount == 2) {
+                System.out.println("\nCentral Referee: " + centralRef.getName() + "\n" +
+                                       "Referee ID: " + centralRef.getRefID() + "\n" +
+                                       "Referee Country: " + centralRef.getCountry() + "\n" +
+                                       "Referee Position: " + centralRef.getRefType().toString() + "\n" +
+                                       "Matches Officiated: " + centralRef.getMatchesOfficiated() + "\n" +
+                                       "Yellows Given: " + centralRef.getYellowsGiven() + "\n" +
+                                       "Reds Given: " + centralRef.getRedsGiven());
+                for(int j=0; j<assistantCount;j++){
+                    System.out.println("\nAssistant Referee #" + (j + 1) + ": " + assistantRefs[j].getName() + "\n" +
+                                        "Referee ID: " + assistantRefs[j].getRefID() + "\n" +
+                                        "Referee Country: " + assistantRefs[j].getCountry() + "\n" +
+                                        "Referee Position: " + assistantRefs[j].getRefType().toString() + "\n" +
+                                        "Matches Officiated: " + assistantRefs[j].getMatchesOfficiated() + "\n" +
+                                        "Yellows Given: " + assistantRefs[j].getYellowsGiven() + "\n" +
+                                        "Reds Given: " + assistantRefs[j].getRedsGiven());
+                }
+                    
+                break;
+            }
+        }
+    
+        // Check if all referees have been assigned correctly
+        if (centralRef == null || assistantCount < 2) {
+            System.out.println("There are not sufficient available referees for match: " + match);
+        } else {
+            // Assign referees to the match if all are assigned
+            match.setCentralReferee(centralRef);
+            match.setAssistantReferees(assistantRefs);
+            assigned=true;
+        }
+        
+}
 
     private void shuffleReferees(Referee[] referees) {
         Random random = new Random();
@@ -904,6 +959,7 @@ public class Controller {
         }
         
     }
+    
     public void sendGoals(Match match, int homeScore, int awayScore){
         match.setHomeScore(homeScore);
         match.setAwayScore(awayScore);
@@ -1008,6 +1064,7 @@ public class Controller {
             
         }
     }
+
     private boolean standingsPrinted;
     private ArrayList<Team> semifinals = new ArrayList<>();
     public void printStandings(){
@@ -1070,10 +1127,136 @@ public class Controller {
         }
 
     }
+
+    private Match[] semiMatches = new Match[2]; 
     public void createAndShowSemis(){
-        for(Team teams : semifinals){
-            System.out.println(teams.getTeamName());
+        
+        Team groupAFirst = semifinals.get(0);
+        Team groupASecond = semifinals.get(1);
+        Team groupBFirst = semifinals.get(2);
+        Team groupBSecond = semifinals.get(3);
+        CustomDate semifinalDate = new CustomDate(15, 12, 2024); //Prior matches end on december 8. Teams are given 1 week of rest.
+
+        semiMatches[0]= new Match(groupAFirst, groupBSecond, semifinalDate.toString());
+        semiMatches[1]= new Match(groupBFirst, groupASecond, semifinalDate.toString());
+        
+        assignReferee(semiMatches);
+    }
+
+    public String getSemiOneHomeTeam(){
+        return semiMatches[0].getHomeTeam().getTeamName();
+    }
+    public String getSemiOneAwayTeam(){
+        return semiMatches[0].getAwayTeam().getTeamName();
+    }
+    public String getSemiTwoHomeTeam(){
+        return semiMatches[1].getHomeTeam().getTeamName();
+    }
+    public String getSemiTwoAwayTeam(){
+        return semiMatches[1].getAwayTeam().getTeamName();
+    }
+    
+    public void goalMiddleman(boolean which, String scorer, String assister, int minute){
+        if(which){
+            Match semi1 = semiMatches[0];
+            addGoalToMatch(semi1, scorer, assister, minute);
+            updateMatchesPlayed(semi1.getHomeTeam());
+            updateMatchesPlayed(semi1.getAwayTeam());
+            updateMatchesOfficiated(semi1.getCentralReferee(),semi1.getAss1Referee(), semi1.getAss2Referee());
+        } else{
+            Match semi2 = semiMatches[1];
+            addGoalToMatch(semi2, scorer, assister, minute);
+            updateMatchesPlayed(semi2.getHomeTeam());
+            updateMatchesPlayed(semi2.getAwayTeam());
+            updateMatchesOfficiated(semi2.getCentralReferee(), semi2.getAss1Referee(), semi2.getAss2Referee());
+
+        }
+    }
+    public void cardMiddleman(boolean which, String player, String cardType, int minute, boolean verify){
+        if(which){
+            addCardToMatch(semiMatches[0], player, cardType, minute, which);
+        } else {
+            addCardToMatch(semiMatches[1], player, cardType, minute, which);
+        }
+    }
+    private Team semi1Winner;
+    private Team semi2Winner;
+    private boolean semi1Win;
+    private boolean semi2Win;
+
+    public void calculateWinner(int which, int homeScore, int awayScore){
+        switch (which) {
+            case 1: //Semi 1
+                if(homeScore>awayScore){
+                    System.out.println(semiMatches[0].getHomeTeam().getTeamName()+" wins the semifinal vs "+semiMatches[0].getAwayTeam().getTeamName()+ " and advances to the finals!");
+                   semi1Winner=semiMatches[0].getHomeTeam(); 
+                } else{
+                    System.out.println(semiMatches[0].getAwayTeam().getTeamName()+" wins the semifinal vs "+semiMatches[0].getHomeTeam().getTeamName()+ " and advances to the finals!");
+                    semi1Winner=semiMatches[0].getAwayTeam(); 
+                }
+                semi1Win=true;
+                break;
+            case 2: //Semi 2
+                if(homeScore>awayScore){
+                    System.out.println(semiMatches[1].getHomeTeam().getTeamName()+" wins the semifinal vs "+semiMatches[1].getAwayTeam().getTeamName()+ " and advances to the finals!");
+                    semi2Winner=semiMatches[1].getHomeTeam();
+                } else{
+                    System.out.println(semiMatches[1].getAwayTeam().getTeamName()+" wins the semifinal vs "+semiMatches[1].getHomeTeam().getTeamName()+ " and advances to the finals!");
+                    semi2Winner=semiMatches[1].getAwayTeam();
+                }
+                semi2Win = true;
+            break;
+            case 3: //Finals
+
+            break;
+            default:
+                break;
+        }
+    }
+    public boolean verifyFinals(){
+        if(semi1Win && semi2Win){
+            return true;
+        } else{
+            return false;
         }
     }
 
+    private Match finals;
+    public void createFinals(){
+        if(semi1Win && semi2Win){
+            CustomDate finalDate = new CustomDate(22, 12, 2024); //1 week after the semifinals
+            finals = new Match(semi1Winner, semi2Winner, finalDate.toString());
+
+            assignReferee(finals);
+        }
+    }
+
+    public void showFinals(){
+        finals.displayMatch();
+    }
+
+    public void showFinalsReferees(){
+        refereeInfo(finals.getCentralReferee().getName());
+        refereeInfo(finals.getAss1Referee().getName());
+        refereeInfo(finals.getAss2Referee().getName());
+    }
+    
+    public String getFinalsHomeTeam(){
+        return finals.getHomeTeam().getTeamName();
+    }
+    
+    public String getFinalsAwayTeam(){
+        return finals.getAwayTeam().getTeamName();
+    }
+    
+    public void finalsMiddleman(String scorer, String assister, int minute){
+        addGoalToMatch(finals, scorer, assister, minute);
+        updateMatchesPlayed(finals.getHomeTeam());
+        updateMatchesPlayed(finals.getAwayTeam());
+        updateMatchesOfficiated(finals.getCentralReferee(), finals.getAss1Referee(), finals.getAss2Referee());
+    }
+
+    public void cardFMiddleman(String player, String cardType, int minute, boolean which){
+        addCardToMatch(finals, player, cardType, minute, which);
+    }
 }

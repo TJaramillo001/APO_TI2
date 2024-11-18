@@ -46,8 +46,6 @@ public class Match {
         this.cardDetails = new ArrayList<>();
         
     }
-    
-
 
     // Returns match details as a string
     public void displayMatch() {
@@ -138,9 +136,6 @@ public class Match {
 
     public void setAwayScore(int awayScore) {
         this.awayScore = awayScore;
-    }
-    public void setMatchDate(String matchDate) {
-        this.matchDate = matchDate;
     }
 
     private boolean isScoreProcessed = false; // Flag
