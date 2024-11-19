@@ -314,15 +314,16 @@ public class Executable {
 
                 // Display recorded goals
                 match.displayGoals();
+                cont.showGameScores();
             }
 
         }else{
             cont.simulateGroupMatches();
+            cont.showGameScores();
         }        
     }
 
     public void registerCards(){
-        System.out.println("To enter the cards manually, press 1");
         
         System.out.println("Which group do you want to enter cards for? (A or B)");
         String group = in.nextLine();
@@ -374,6 +375,8 @@ public class Executable {
     public void run_semifinals(){
         boolean flag=false;
         int select;
+        boolean created = false;
+
         while (!flag) {
             System.out.println("\n\nWelcome to the Semi Finals:\n");
 			System.out.println( "Please select one of the following:\n" + 
@@ -392,7 +395,12 @@ public class Executable {
             
             switch (select) {
                 case 1:
-                    cont.createAndShowSemis();
+                    if(!created){
+                        cont.createAndShowSemis();
+                        created = true;
+                    } else {
+                        showSemis();
+                    }
                 break;
                 case 2:
                     registerSemifinalScore();
@@ -429,6 +437,11 @@ public class Executable {
                     continue;
             }
         }
+
+    }
+    public void showSemis(){
+        System.out.println("\n\n\nMatch 1: "+cont.getSemiOneHomeTeam()+" vs "+cont.getSemiOneAwayTeam() + " on "+cont.getSemiDate());
+        System.out.println("Match 2: "+cont.getSemiTwoHomeTeam()+" vs "+cont.getSemiTwoAwayTeam() + " on "+cont.getSemiDate());
 
     }
 
@@ -574,9 +587,50 @@ public class Executable {
                 int minute = in.nextInt();
                 in.nextLine(); // Clear the newline
 
-                cont.cardMiddleman(false, player, cardType, minute, false); //False is for away team
+                cont.cardMiddleman(false, player, cardType, minute, true); //False is for away team
             }
+            
+        //Second Game
+        System.out.println("Enter the cards awarded in " + cont.getSemiTwoHomeTeam() + " vs " + cont.getSemiTwoAwayTeam());
+        System.out.print("Home cards: ");
+        homeCards = in.nextInt();
+        in.nextLine();
+
+        System.out.print("Away cards: ");
+        awayCards = in.nextInt();
+        in.nextLine();
+
+        for(int i=0; i<homeCards;i++){
+            System.out.println("Enter the details for card #"+(i+1)+" for "+cont.getSemiTwoHomeTeam());
+            System.out.println("Player who commited the foul: ");
+            String player = in.nextLine();
+
+            System.out.println("Card awarded (YELLOW or RED)");
+            String cardType = in.nextLine().toUpperCase();
+
+            System.out.print("Minute: ");
+            int minute = in.nextInt();
+            in.nextLine(); // Clear the newline
+
+            cont.cardMiddleman(true, player, cardType, minute, false); //True is for home team
+        }
+        for(int i=0; i<awayCards;i++){
+        
+            System.out.println("Enter the details for card #"+(i+1)+" for "+cont.getSemiTwoAwayTeam());
+            System.out.println("Player who commited the foul: ");
+            String player = in.nextLine();
+
+            System.out.println("Card awarded (YELLOW or RED)");
+            String cardType = in.nextLine().toUpperCase();
+  
+            System.out.print("Minute: ");        
+            int minute = in.nextInt();
+            in.nextLine(); // Clear the newline
+
+            cont.cardMiddleman(false, player, cardType, minute, false); //False is for away team    
+        }
     }
+
     public void run_finals(){
         boolean flag=false;
         int select;
@@ -611,6 +665,13 @@ public class Executable {
                 case 4:
                     registerFinalCards();
                 break;
+                case 5:
+                    if(cont.verifyWinner()){
+                        flag = true;
+                    } else {
+                        System.out.println("Please enter the scores before attempting to advance to the Prize ceremony");
+                    }
+                break;
                 case 10:
                     System.out.println("Thank you for using the application!");
                     in.close();
@@ -632,6 +693,7 @@ public class Executable {
         }
 
     }
+
     private boolean finals=false;
     public void registerFinalScore(){
         if(!finals){
@@ -654,6 +716,7 @@ public class Executable {
                 in.nextLine();
             }
 
+
             for (int i = 0; i < homeScore; i++) {
                 System.out.println("Enter details for goal #" + (i + 1) + " for " + cont.getFinalsHomeTeam());
                 System.out.print("Scorer: ");
@@ -664,7 +727,7 @@ public class Executable {
                 int minute = in.nextInt();
                 in.nextLine(); // Clear the newline
                     
-                cont.goalMiddleman(true, scorer, assister, minute);
+                cont.finalsMiddleman(scorer, assister, minute);
             }
 
             for (int i = 0; i < awayScore; i++) {
@@ -679,7 +742,11 @@ public class Executable {
 
                 cont.finalsMiddleman(scorer, assister, minute);
             }
-        }       
+            cont.calculateWinner(3, homeScore, awayScore);
+            finals = true;
+        } else {
+            System.out.println("The scores have already been set. There is already a winner.");
+        }
     }
 
     public void registerFinalCards(){
@@ -722,6 +789,104 @@ public class Executable {
         }
     }
 
+    public void run_prizeCeremony(){
+        boolean flag=false;
+        int select;
+        
+        while (!flag) {
+            System.out.println("\n\nWelcome to the Prize Ceremony:\n");
+			System.out.println( "Please select one of the following:\n" + 
+                                "1. Consult Golden Boot Winner\n" + 
+                                "2. Consult FairPlay\n" + 
+                                "3. Consult Team Efficiency\n" + 
+                                "4. Consult Player Efficiency \n"+
+                                "5. Consult Referee Cards per Match Officiated \n"+
+                                "10. Exit \n\n" 
+
+                                // "15. Show Team Information \n" + 
+                                // "20. Show Player Information \n" + 
+                                // "25. Show Referee Information \n"
+            );
+            select=in.nextInt();
+            in.nextLine();
+            
+            switch (select) {
+                case 1:
+                    cont.getGoldenBoot();
+                break;
+                case 2:
+                    cont.getFairPlay(); 
+                break;
+                case 3:
+                    calculateTeamEfficiency();
+                break;
+                case 4:
+                    calculatePlayerEfficiency();
+                break;
+                case 5:
+                    consultRefereeIndicators();
+                break;
+                case 10:
+                    System.out.println("Thank you for using the application!");
+                    in.close();
+                    System.exit(0);
+                break;
+                case 15:
+                    showTeamInfo();
+                    break;
+                case 20:
+                    showPlayerInfo();
+                    break;
+                case 25:
+                    showRefInfo();
+                    break;
+                default:
+                    System.out.println("Sorry, please select a valid option");
+                    continue;
+            }
+        }
+
+    }
+
+    public void calculateTeamEfficiency(){
+        System.out.println("Which team would you like to consult?\nHere are the available options:");
+        cont.showAllTeams();
+        String countrySelected = in.nextLine();
+        boolean flag=cont.teamInfo(countrySelected);
+
+        if(!flag){
+            System.out.println("Sorry, we weren't able to find that team");
+        } else {
+            cont.calculateTeamEfficiency(countrySelected);
+        }
+    }
+
+    public void calculatePlayerEfficiency(){
+        System.out.println("Which player would you like to consult?");
+        String playerSelected = in.nextLine();
+        boolean flag=cont.playerInfo(playerSelected);
+        
+        if(!flag){
+            System.out.println("Sorry, we weren't able to find that Player");
+        } else {
+            cont.calculatePlayerEfficiency(playerSelected);
+        }
+
+    }
+
+    public void consultRefereeIndicators(){
+        System.out.println("\nPlease enter the name of the referee you would like to consult");
+        System.out.println("Here are the following options:\n");
+        cont.showAllRefs();
+        
+        String refName=in.nextLine();
+        boolean flag=cont.refereeInfo(refName);
+        if(!flag){
+            System.out.println("Sorry, we weren't able to find that referee");
+        } else {
+            cont.consultRefereeIndicators(refName);
+        }
+    }
     
 
 
@@ -731,6 +896,7 @@ public class Executable {
         main.run_group();
         main.run_semifinals();
         main.run_finals();
+        main.run_prizeCeremony();
 	}
 
 }

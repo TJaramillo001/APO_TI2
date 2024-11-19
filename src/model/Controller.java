@@ -963,6 +963,7 @@ public class Controller {
     public void sendGoals(Match match, int homeScore, int awayScore){
         match.setHomeScore(homeScore);
         match.setAwayScore(awayScore);
+        
     }
     
     public void showGameScores() {
@@ -1129,13 +1130,14 @@ public class Controller {
     }
 
     private Match[] semiMatches = new Match[2]; 
+    private CustomDate semifinalDate;
     public void createAndShowSemis(){
         
         Team groupAFirst = semifinals.get(0);
         Team groupASecond = semifinals.get(1);
         Team groupBFirst = semifinals.get(2);
         Team groupBSecond = semifinals.get(3);
-        CustomDate semifinalDate = new CustomDate(15, 12, 2024); //Prior matches end on december 8. Teams are given 1 week of rest.
+        semifinalDate = new CustomDate(15, 12, 2024); //Prior matches end on december 8. Teams are given 1 week of rest.
 
         semiMatches[0]= new Match(groupAFirst, groupBSecond, semifinalDate.toString());
         semiMatches[1]= new Match(groupBFirst, groupASecond, semifinalDate.toString());
@@ -1155,6 +1157,9 @@ public class Controller {
     public String getSemiTwoAwayTeam(){
         return semiMatches[1].getAwayTeam().getTeamName();
     }
+    public String getSemiDate(){
+        return semifinalDate.toString();
+    }
     
     public void goalMiddleman(boolean which, String scorer, String assister, int minute){
         if(which){
@@ -1173,7 +1178,7 @@ public class Controller {
         }
     }
     public void cardMiddleman(boolean which, String player, String cardType, int minute, boolean verify){
-        if(which){
+        if(verify){
             addCardToMatch(semiMatches[0], player, cardType, minute, which);
         } else {
             addCardToMatch(semiMatches[1], player, cardType, minute, which);
@@ -1183,16 +1188,23 @@ public class Controller {
     private Team semi2Winner;
     private boolean semi1Win;
     private boolean semi2Win;
+    private Team tournamentWinner;
+    private boolean finalsPlayed;
 
     public void calculateWinner(int which, int homeScore, int awayScore){
         switch (which) {
+            
             case 1: //Semi 1
                 if(homeScore>awayScore){
                     System.out.println(semiMatches[0].getHomeTeam().getTeamName()+" wins the semifinal vs "+semiMatches[0].getAwayTeam().getTeamName()+ " and advances to the finals!");
                    semi1Winner=semiMatches[0].getHomeTeam(); 
+                   semiMatches[0].getHomeTeam().incrementMatchesWon();
+                   semiMatches[0].getAwayTeam().incrementMatchesLost();
                 } else{
                     System.out.println(semiMatches[0].getAwayTeam().getTeamName()+" wins the semifinal vs "+semiMatches[0].getHomeTeam().getTeamName()+ " and advances to the finals!");
-                    semi1Winner=semiMatches[0].getAwayTeam(); 
+                    semi1Winner=semiMatches[0].getAwayTeam();
+                    semiMatches[0].getAwayTeam().incrementMatchesWon();
+                    semiMatches[0].getHomeTeam().incrementMatchesLost(); 
                 }
                 semi1Win=true;
                 break;
@@ -1200,17 +1212,30 @@ public class Controller {
                 if(homeScore>awayScore){
                     System.out.println(semiMatches[1].getHomeTeam().getTeamName()+" wins the semifinal vs "+semiMatches[1].getAwayTeam().getTeamName()+ " and advances to the finals!");
                     semi2Winner=semiMatches[1].getHomeTeam();
+                    semiMatches[1].getHomeTeam().incrementMatchesWon();
+                    semiMatches[1].getAwayTeam().incrementMatchesLost();
                 } else{
                     System.out.println(semiMatches[1].getAwayTeam().getTeamName()+" wins the semifinal vs "+semiMatches[1].getHomeTeam().getTeamName()+ " and advances to the finals!");
                     semi2Winner=semiMatches[1].getAwayTeam();
+                    semiMatches[1].getAwayTeam().incrementMatchesWon();
+                    semiMatches[1].getHomeTeam().incrementMatchesLost();
                 }
                 semi2Win = true;
             break;
             case 3: //Finals
-
+            if(homeScore>awayScore){
+                System.out.println(finals.getHomeTeam().getTeamName()+" wins the tournament!");
+                tournamentWinner=finals.getHomeTeam();
+                finals.getHomeTeam().incrementMatchesWon();
+                finals.getAwayTeam().incrementMatchesLost();
+            } else{
+                System.out.println(finals.getAwayTeam().getTeamName()+" wins the tournament!");
+                tournamentWinner=finals.getAwayTeam();
+                finals.getAwayTeam().incrementMatchesWon();
+                finals.getHomeTeam().incrementMatchesLost();
+            }
+            finalsPlayed=true;
             break;
-            default:
-                break;
         }
     }
     public boolean verifyFinals(){
@@ -1257,6 +1282,117 @@ public class Controller {
     }
 
     public void cardFMiddleman(String player, String cardType, int minute, boolean which){
-        addCardToMatch(finals, player, cardType, minute, which);
+        addCardToMatch(finals, player, cardType, minute, which);   
+    }
+
+    public boolean verifyWinner(){
+        if(finalsPlayed){
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public void getGoldenBoot(){
+        Player topScorer = null;
+        Team topScorersTeam = null;
+        int highestGoals = 0;
+
+        for (Team team : teams) { 
+            for (Player player : team.getPlayers()) {
+                if (player != null && player.getGoalsScored() > highestGoals) {
+                    highestGoals = player.getGoalsScored();
+                    topScorer = player;
+                    topScorersTeam = team;
+                }
+            }
+        }
+
+        if (topScorer != null) {
+            System.out.println("Golden Boot Winner: " + topScorer.getName() +" from "+topScorersTeam.getTeamName()+ " with " + highestGoals + " goals.");
+        } else {
+            System.out.println("No players have scored any goals.");
+        }
+    }
+    public void getFairPlay(){
+        /*For this method we are taking values that add how unfair a team was, adding value to the cards
+        We are assuming a yellow is worth 1 point and a red is worth 3 points.
+        The team with the least points is awarded the fair play award. 
+        */
+        Team fairPlay = null;
+        int leastValue = 100;
+
+        for (Team team : teams) { 
+            if (team != null && ((team.getYellowCards()*1)+(team.getRedCards()*3)) < leastValue) {
+                leastValue = (team.getYellowCards()*1)+(team.getRedCards()*3);
+                fairPlay = team;
+            }
+            
+        }
+
+        if (fairPlay != null) {
+            System.out.println("Fair Play Winner: " + fairPlay.getTeamName() + " with a point value of "+leastValue);
+        } else {
+            System.out.println("No teams have been registered");
+        }
+    }
+    public void calculateTeamEfficiency(String countrySelected){
+        for (Team team : teams) {
+            if (team != null && team.getTeamName().equalsIgnoreCase(countrySelected)) {
+
+                double winRatio = (double) (team.getMatchesWon())/(team.getMatchesPlayed());
+                double lossRatio = (double) team.getMatchesLost()/team.getMatchesPlayed();
+                double goalsPerGame = (double) team.getGoalsFor()/team.getMatchesPlayed();
+                double goalsAgainstPerGame = (double) team.getGoalsAgainst()/team.getMatchesPlayed();
+                double yCardsPerGame = (double) team.getYellowCards()/team.getMatchesPlayed();
+                double rCardsPerGame = (double) team.getRedCards()/team.getMatchesPlayed();
+
+
+                System.out.println("\n\n\n\n\nTeam Name: " + team.getTeamName() + "\n" +
+                                   "Country: " + team.getCountry() + "\n" +
+                                   "Head Coach: " + team.getCoachName() + "\n\n" +
+
+                                   "Win Ratio: "+ winRatio*100 +"%\n" +
+                                   "Loss Ratio: "+lossRatio*100+"%\n"+
+                                   "Goals For per Game: "+goalsPerGame+"\n"+
+                                   "Goals Against per Game: "+goalsAgainstPerGame+"\n"+
+                                   "Yellow Cards per Game: "+yCardsPerGame+"\n"+
+                                   "Red Cards per Game: "+rCardsPerGame+"\n"
+                );
+            }
+        }
+    }
+    public void calculatePlayerEfficiency(String playerSelected){
+        for(Player player:players){
+            if(player!=null&& player.getName().equalsIgnoreCase(playerSelected)){
+                double goalsPerGame = (double) player.getGoalsScored()/player.getMatchesPlayed();
+                double assistsPerGame = (double) player.getAssists()/player.getMatchesPlayed();
+                double yCardsPerGame = (double) player.getYellowCards()/player.getMatchesPlayed();
+                double rCardsPerGame = (double) player.getRedCards()/player.getMatchesPlayed();
+
+                System.out.println( "\n\n\n\n\nPlayer Name: " + player.getName() + "\n" +
+                                    "Country: " + player.getCountry() + "\n" +
+                                    "Jersey Number: " + player.getPlayerNum() + "\n" +
+                                    "Player Position: "+player.getPlayerPosition().toString()+ "\n\n" +
+
+                                    "Goals per Game: " + goalsPerGame+"\n"+
+                                    "Assists per Game: "+ assistsPerGame+"\n"+
+                                    "Yellow Cards per Game: "+yCardsPerGame+"\n"+
+                                    "Red Cards per Game: "+rCardsPerGame+"\n"
+                                    );
+            }
+        }
+
+    }
+    public void consultRefereeIndicators(String refName){
+        for(Referee refs: referees){
+            if(refName.equalsIgnoreCase(refs.getName())&&refs!=null){
+                double yellowsPerGame = (double) refs.getYellowsGiven() / refs.getMatchesOfficiated();
+                double redsPerGame = (double) refs.getRedsGiven() / refs.getMatchesOfficiated();
+
+                System.out.println( "\nReferee Name: "+refs.getName() + "\n" +
+                                    "Yellows per Game: "+yellowsPerGame+"\n"+
+                                    "Reds per Game: "+redsPerGame+"\n");
+            }
+        }
     }
 }
